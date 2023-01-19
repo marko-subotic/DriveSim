@@ -1,0 +1,6 @@
+C:\Users\marko\code\DriveSim\Tests\SimTests\bin\Debug\net6.0\CoverletSourceRootsMapping
+C:\Users\marko\code\DriveSim\Tests\SimTests\obj\Debug\net6.0\SimTests.csproj.AssemblyReference.cache
+C:\Users\marko\code\DriveSim\Tests\SimTests\obj\Debug\net6.0\SimTests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marko\code\DriveSim\Tests\SimTests\obj\Debug\net6.0\SimTests.AssemblyInfoInputs.cache
+C:\Users\marko\code\DriveSim\Tests\SimTests\obj\Debug\net6.0\SimTests.AssemblyInfo.cs
+C:\Users\marko\code\DriveSim\Tests\SimTests\obj\Debug\net6.0\SimTests.csproj.CoreCompileInputs.cache
