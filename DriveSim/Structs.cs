@@ -37,7 +37,10 @@ namespace DriveSim
             return new Point(p1.x+p2.x, p1.y+p2.y);
         }
 
-        
+        public double distO()
+        {
+            return Math.Sqrt(x*x + y*y);
+        }
     }
 
 }

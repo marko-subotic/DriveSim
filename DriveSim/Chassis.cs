@@ -12,6 +12,7 @@ public abstract class Chassis
     private readonly int NUM_WHEELS = 4;
     private readonly double WHEEL_PROP = 5;
     public static readonly double MAX_SPEED = 20;
+    public static readonly double K_ROT = 1;
     // in radians, 0 is straight up
     protected double[] wheelDirections;
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
@@ -32,7 +33,7 @@ public abstract class Chassis
     {
         wheelVelos = new double[NUM_WHEELS];
         wheelPowers = new double[NUM_WHEELS];
-        wheelPositions = new Point[NUM_WHEELS,2];
+        wheelPositions = new Point[NUM_WHEELS,3];
         wheelDirections = new double[NUM_WHEELS];
         this.radius = radius;
         position = new Point();
@@ -70,12 +71,12 @@ public abstract class Chassis
 
         for (int i = 0; i<globals.GetLength(0); i++)
         {
-            for(int r = 0; r < globals.GetLength(1); r++)
+            for(int r = 0; r < globals.GetLength(1)-1; r++)
             {
                 globals[i, r].x = position.x + (wheelPositions[i, r].x * Math.Cos(-header) - wheelPositions[i, r].y * Math.Sin(-header));
                 globals[i, r].y = position.y + (wheelPositions[i, r].x * Math.Sin(-header) + wheelPositions[i, r].y * Math.Cos(-header));
-
             }
+            globals[i, 2] = Point.avg(globals[i, 0], globals[i, 1]);
         }
         return globals;
     }
@@ -108,15 +109,17 @@ public abstract class Chassis
 
     /*
      * this will calculate the angular velocity of the chassis given the state of the chassis.
+     * positive is turning ccw, negative is cw.
      */
-    public Point getAngVelo()
+    public double getAngVelo()
     {
-        Point deltaV = new Point();
+        double deltaO = 0;
         for (int i = 0; i < wheelVelos.GetLength(0); i++)
         {
-
+            double angTo = wheelDirections[i] - angleToPoint(wheelPositions[i, 2]);
+            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 3].distO();
         }
-        return deltaV;
+        return deltaO;
     }
     /*
      * Returns a point in the global coordinate system given a point in the chassis coordinate
@@ -195,4 +198,8 @@ public abstract class Chassis
             }
         }
     }
+
+    /*
+     * returns cross product of two vectors
+     */
 }
