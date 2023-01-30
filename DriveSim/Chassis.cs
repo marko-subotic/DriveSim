@@ -116,8 +116,8 @@ public abstract class Chassis
         double deltaO = 0;
         for (int i = 0; i < wheelVelos.GetLength(0); i++)
         {
-            double angTo = wheelDirections[i] - angleToPoint(wheelPositions[i, 2]);
-            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 3].distO();
+            double angTo = wheelDirections[i] - Utils.angleToPoint(wheelPositions[i, 2]);
+            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 3].dist();
         }
         return deltaO;
     }
@@ -153,53 +153,5 @@ public abstract class Chassis
     }
 
 
-    /*
-     * Similar to atan2 function, but returns an angle according to theta = 0
-     * meaning the point is directly above the origin and positive direction of theta being ccw.
-     * **/
-    public static double angleToPoint(Point target)
-    {
-        if (target.y == 0)
-        {
-            if (target.x == 0)
-            {
-                throw new Exception("Illegal Argument");
-            }
-            else if (target.x > 0)
-            {
-                return Math.PI * 3 / 2;
-            }
-            else if (target.x < 0)
-            {
-                return Math.PI / 2;
-            }
-        }
-        double startAngle = Math.Abs(Math.Atan(target.x / target.y));
-        if (target.y > 0)
-        {
-            if (target.x <= 0)
-            {
-                return startAngle;
-            }
-            else
-            {
-                return 2 * Math.PI - startAngle;
-            }
-        }
-        else
-        {
-            if (target.x >= 0)
-            {
-                return Math.PI + startAngle;
-            }
-            else
-            {
-                return Math.PI - startAngle;
-            }
-        }
-    }
-
-    /*
-     * returns cross product of two vectors
-     */
+    
 }

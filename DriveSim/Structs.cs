@@ -36,10 +36,36 @@ namespace DriveSim
         {
             return new Point(p1.x+p2.x, p1.y+p2.y);
         }
-
-        public double distO()
+        public static Point operator -(Point p1, Point p2)
         {
-            return Math.Sqrt(x*x + y*y);
+            return new Point(p1.x - p2.x, p1.y - p2.y);
+        }
+
+        public static Point operator *(Point p1, double scalar)
+        {
+            return new Point(p1.x * scalar, p1.y * scalar);
+        }
+
+        public static Point operator /(Point p1, double scalar)
+        {
+            return new Point(p1.x / scalar, p1.y / scalar);
+        }
+
+        public double dist(Point origin = new Point())
+        {
+            return Math.Sqrt(Math.Pow(x-origin.x,2) + Math.Pow(y - origin.y, 2));
+        }
+    }
+
+    public struct PointCharge
+    {
+        public Point location;
+        public double charge;
+
+        public PointCharge(Point location, double charge)
+        {
+            this.location = location;
+            this.charge = charge;
         }
     }
 
