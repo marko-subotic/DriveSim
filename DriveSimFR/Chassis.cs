@@ -1,4 +1,4 @@
-using DriveSim;
+using DriveSimFR;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("SimTests")]

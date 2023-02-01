@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
 
-namespace DriveSim
+namespace DriveSimFR
 {
     public class Utils
     {

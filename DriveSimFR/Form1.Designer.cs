@@ -1,4 +1,6 @@
-﻿namespace DriveSimFR
+﻿using SkiaSharp;
+
+namespace DriveSimFR
 {
     partial class Form1
     {
@@ -52,6 +54,14 @@
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            canvas.Clear(SKColors.Black);
+            using (SKImage image = surface.Snapshot())
+            using (SKData data = image.Encode(SKEncodedImageFormat.Png, 100))
+            using (MemoryStream mStream = new MemoryStream(data.ToArray()))
+            {
+                Bitmap bm = new Bitmap(mStream, false);
+                pictureBox1.Image = bm;
+            }
 
         }
 

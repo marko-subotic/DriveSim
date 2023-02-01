@@ -11,12 +11,12 @@ namespace DriveSimFR
 
         public Form1()
         {
-            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/50,Form1.height/50);
-            InitializeComponent();
+            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30);
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
-            canvas.Clear(SKColors.Black);
+            InitializeComponent();
+
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
