@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace DriveSim
 {
@@ -10,9 +11,9 @@ namespace DriveSim
     {
         /*
      * Similar to atan2 function, but returns an angle according to theta = 0
-     * meaning the point is directly above the origin and positive direction of theta being ccw.
+     * meaning the Vector is directly above the origin and positive direction of theta being ccw.
      * **/
-        public static double angleToPoint(Point target, Point origin = new Point())
+        public static double angleToVector(Vector target, Vector origin = new Vector())
         {
             target -= origin;
             if (target.y == 0)
@@ -55,6 +56,20 @@ namespace DriveSim
             }
         }
 
+        /*
+         * Generates a unit vector given a theta, where 0 would give [0,1] (Vectoring straight up).
+         * CCW is positive.
+         */
+        public static Vector unitVectorFromTheta(double theta)
+        {
+            return new Vector(-Math.Sin(theta), Math.Cos(theta));
+
+        }
+
+        public static SKPoint vecToPt(Vector vector)
+        {
+            return new SKPoint((int)vector.x, (int)vector.y);
+        }
         /*
          * returns cross product of two vectors
          */

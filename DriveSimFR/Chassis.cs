@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 /*
  * Chassis interface holds what any type of 4-wheel drive chassis should have. All calculations
- * are made under presumption that 0 of a heading is pointing up on x,y cartesian system.
+ * are made under presumption that 0 of a heading is Vectoring up on x,y cartesian system.
  * **/
 public abstract class Chassis
 {
@@ -17,7 +17,7 @@ public abstract class Chassis
     protected double[] wheelDirections;
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
     //center of chassis will be origin of local coordinate system housing wheel positions.
-    protected Point[,] wheelPositions;
+    protected Vector[,] wheelPositions;
     //for now radius is not necessary here, should be used to position the wheels for ordinary
     //chassis such as tank drive or X-drive.
     protected double radius;
@@ -25,7 +25,7 @@ public abstract class Chassis
     protected double[] wheelVelos;
     protected double[] wheelPowers;
     protected double frictionCoeff;
-    protected Point position;
+    protected Vector position;
     protected double header;
     protected double wheelLength;
 
@@ -33,10 +33,10 @@ public abstract class Chassis
     {
         wheelVelos = new double[NUM_WHEELS];
         wheelPowers = new double[NUM_WHEELS];
-        wheelPositions = new Point[NUM_WHEELS,3];
+        wheelPositions = new Vector[NUM_WHEELS,3];
         wheelDirections = new double[NUM_WHEELS];
         this.radius = radius;
-        position = new Point();
+        position = new Vector();
         wheelLength = radius / WHEEL_PROP;
         header = 0;
     }
@@ -62,12 +62,12 @@ public abstract class Chassis
 
     /*
      * This method will return the position of wheels on chassis in the global coordinate system,
-     * with respect to the chassis position and header. each wheel will have 2 points, so a line
+     * with respect to the chassis position and header. each wheel will have 2 Vectors, so a line
      * can be drawn in between them.
      */
-    public Point[,] getGlobalWheelPositions()
+    public Vector[,] getGlobalWheelPositions()
     {
-        Point[,] globals = new Point[NUM_WHEELS, 2];
+        Vector[,] globals = new Vector[NUM_WHEELS, 2];
 
         for (int i = 0; i<globals.GetLength(0); i++)
         {
@@ -76,7 +76,7 @@ public abstract class Chassis
                 globals[i, r].x = position.x + (wheelPositions[i, r].x * Math.Cos(-header) - wheelPositions[i, r].y * Math.Sin(-header));
                 globals[i, r].y = position.y + (wheelPositions[i, r].x * Math.Sin(-header) + wheelPositions[i, r].y * Math.Cos(-header));
             }
-            globals[i, 2] = Point.avg(globals[i, 0], globals[i, 1]);
+            globals[i, 2] = Vector.avg(globals[i, 0], globals[i, 1]);
         }
         return globals;
     }
@@ -95,12 +95,12 @@ public abstract class Chassis
      * this will calculate the linear velocity of the chassis given the state of the chassis, in
      * the local coordinate system of the chassis.
      */
-    public Point getLinVelo()
+    public Vector getLinVelo()
     {
-        Point deltaV = new Point();
+        Vector deltaV = new Vector();
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            Point adder = getVeloVector(wheelVelos[i], wheelDirections[i]);
+            Vector adder = getVeloVector(wheelVelos[i], wheelDirections[i]);
             deltaV += adder;
 
         }
@@ -116,21 +116,21 @@ public abstract class Chassis
         double deltaO = 0;
         for (int i = 0; i < wheelVelos.GetLength(0); i++)
         {
-            double angTo = wheelDirections[i] - Utils.angleToPoint(wheelPositions[i, 2]);
+            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 2]);
             deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 3].dist();
         }
         return deltaO;
     }
     /*
-     * Returns a point in the global coordinate system given a point in the chassis coordinate
+     * Returns a Vector in the global coordinate system given a Vector in the chassis coordinate
      * system.
      * 
-     * @param local: a point in the chassis coordinate systme.
-     * @return: a point in the global system.
+     * @param local: a Vector in the chassis coordinate systme.
+     * @return: a Vector in the global system.
      */
-    public Point chassisToGlobal(Point local)
+    public Vector chassisToGlobal(Vector local)
     {
-        Point global = new Point(position);
+        Vector global = new Vector(position);
 
         global.x += local.x * Math.Cos(-header) -local.y * Math.Sin(-header);
         global.y += local.x * Math.Sin(-header) + local.y * Math.Cos(-header);
@@ -144,9 +144,9 @@ public abstract class Chassis
      * @param magnitude: magnitude of velocity
      * @param heading: direction of velocity
      * **/
-    private Point getVeloVector(double magnitude, double heading)
+    private Vector getVeloVector(double magnitude, double heading)
     {
-        Point adder = new Point(magnitude);
+        Vector adder = new Vector(magnitude);
         adder.x *= -Math.Sin(heading);
         adder.y *= Math.Cos(heading);
         return adder;
