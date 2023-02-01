@@ -54,6 +54,19 @@ namespace DriveSimFR
         {
             return new Vector(p1.x / scalar, p1.y / scalar);
         }
+        public static bool operator ==(Vector p1, Vector p2)
+        {
+            return (Math.Abs(p1.x-p2.x)<.0001 && Math.Abs(p1.y - p2.y) < .0001);
+        }
+        public static bool operator !=(Vector p1, Vector p2)
+        {
+            return (p1==p2);
+        }
+
+        public override string ToString()
+        {
+            return this.x.ToString() + ", "+ this.y.ToString();
+        }
 
         public double dist(Vector origin = new Vector())
         {

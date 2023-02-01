@@ -1,4 +1,4 @@
-namespace DriveSim
+namespace DriveSimFR
 {
     internal static class Program
     {

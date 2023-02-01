@@ -9,10 +9,13 @@ using System.Runtime.CompilerServices;
  * **/
 public abstract class Chassis
 {
-    private readonly int NUM_WHEELS = 4;
-    private readonly double WHEEL_PROP = 5;
-    public static readonly double MAX_SPEED = 20;
-    public static readonly double K_ROT = 1;
+    protected readonly int NUM_WHEELS = 4;
+    public static readonly double MAX_SPEED;
+    public static readonly double K_ROT;
+    protected readonly double wheelLength;
+    protected readonly double WHEEL_PROP;
+    protected readonly double frictionCoeff = 1;
+
     // in radians, 0 is straight up
     protected double[] wheelDirections;
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
@@ -24,21 +27,30 @@ public abstract class Chassis
     //index of each wheel corresponds to wheel direction&wheelPositions
     protected double[] wheelVelos;
     protected double[] wheelPowers;
-    protected double frictionCoeff;
     protected Vector position;
     protected double header;
-    protected double wheelLength;
 
-    public Chassis(int radius)
+    public Chassis(int radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP)
     {
-        wheelVelos = new double[NUM_WHEELS];
+        wheelVelos= new double[NUM_WHEELS];
         wheelPowers = new double[NUM_WHEELS];
-        wheelPositions = new Vector[NUM_WHEELS,3];
-        wheelDirections = new double[NUM_WHEELS];
         this.radius = radius;
-        position = new Vector();
-        wheelLength = radius / WHEEL_PROP;
+        this.position = position;
         header = 0;
+        this.wheelDirections = new double[wheelDirections.Length];
+        for (int i = 0; i < wheelDirections.GetLength(0); i++)
+        {
+            this.wheelDirections[i] = wheelDirections[i];
+        }
+        this.wheelPositions = new Vector[NUM_WHEELS, 3];
+        this.WHEEL_PROP = WHEELS_PROP;
+        wheelLength = radius / WHEEL_PROP;
+        for (int i = 0; i < NUM_WHEELS; i++)
+        {
+            this.wheelPositions[i, 0] = wheelPositions[i];
+            this.wheelPositions[i, 1] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
+            this.wheelPositions[i, 2] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
+        }
     }
 
     /*
@@ -67,19 +79,21 @@ public abstract class Chassis
      */
     public Vector[,] getGlobalWheelPositions()
     {
-        Vector[,] globals = new Vector[NUM_WHEELS, 2];
+        Vector[,] globals = new Vector[NUM_WHEELS, 3];
 
         for (int i = 0; i<globals.GetLength(0); i++)
         {
-            for(int r = 0; r < globals.GetLength(1)-1; r++)
+            for(int r = 1; r < wheelPositions.GetLength(1); r++)
             {
                 globals[i, r].x = position.x + (wheelPositions[i, r].x * Math.Cos(-header) - wheelPositions[i, r].y * Math.Sin(-header));
                 globals[i, r].y = position.y + (wheelPositions[i, r].x * Math.Sin(-header) + wheelPositions[i, r].y * Math.Cos(-header));
             }
-            globals[i, 2] = Vector.avg(globals[i, 0], globals[i, 1]);
+            globals[i, 0] = Vector.avg(globals[i, 1], globals[i, 2]);
         }
         return globals;
     }
+
+    public Vector[,] getWheelPositions() { return wheelPositions; }
 
     /*
      * This will calculate out the next position given the current state of the chassis as well as
@@ -116,8 +130,8 @@ public abstract class Chassis
         double deltaO = 0;
         for (int i = 0; i < wheelVelos.GetLength(0); i++)
         {
-            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 2]);
-            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 3].dist();
+            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
+            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 0].dist();
         }
         return deltaO;
     }
