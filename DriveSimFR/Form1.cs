@@ -8,7 +8,7 @@ namespace DriveSimFR
         StaticElectricField field;
         SKSurface surface;
         SKCanvas canvas;
-
+        int counter = 0;
         public Form1()
         {
             field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30);
@@ -22,8 +22,9 @@ namespace DriveSimFR
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
-            field.addCharge(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100));
+            field.addCharge(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100*Math.Pow(-1,counter)));
             canvas.Clear(SKColors.Black);
+            counter++;
             using (SKPaint paint = new SKPaint())
             {
                 paint.Color = SKColors.Blue;

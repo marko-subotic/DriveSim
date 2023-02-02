@@ -1,21 +1,15 @@
-using DriveSimFR;
+﻿using DriveSimFR;
 
 namespace tests
 {
-
-    //Tests for the chassis constructor given a set of wheel positions and directions
-    //should create the two end points outside of the first average.
     [TestClass]
-    public class Test_Chassis_Constructors
+    public class Test_Chassis_Step
     {
         int num_wheels = 4;
         Vector[,] wheelPosAssert;
         double[] wheelDir;
         Vector position = new Vector();
 
-        /*
-         * Helper method that will just 
-         */
         public Vector[] getWheelPos(Vector[,] wheelPos)
         {
             Vector[] rtrn = new Vector[num_wheels];
@@ -29,7 +23,7 @@ namespace tests
         public void TestChassisConstructor_TankDrive()
         {
             //Given
-            double rT = Math.Sqrt(2)/2;
+            double rT = Math.Sqrt(2) / 2;
             double rTP = rT + .5;
             double rTM = rT - .5;
             //wheel positions start at top left and go cw
@@ -44,14 +38,14 @@ namespace tests
             wheelDir = new double[4] { 0, 0, 0, 0 };
             TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
             Vector[,] testerWheelPos = tester.getWheelPositions();
-            
-            
+
+
             //then
-            for(int r = 0; r< testerWheelPos.GetLength(0); r++)
+            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
             {
-                for(int c = 0; c < testerWheelPos.GetLength(1); c++)
+                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
                 {
-                    Assert.AreEqual(testerWheelPos[r,c], wheelPosAssert[r,c]);
+                    Assert.AreEqual(testerWheelPos[r, c], wheelPosAssert[r, c]);
                 }
             }
         }
@@ -69,7 +63,7 @@ namespace tests
             };
             Vector[] wheelPos = getWheelPos(wheelPosAssert);
             //wheel directions start at  left and go cw
-            wheelDir = new double[4] { 0, 3*Math.PI/2, Math.PI, Math.PI/2 };
+            wheelDir = new double[4] { 0, 3 * Math.PI / 2, Math.PI, Math.PI / 2 };
             TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
             Vector[,] testerWheelPos = tester.getWheelPositions();
 
@@ -79,7 +73,7 @@ namespace tests
             {
                 for (int c = 0; c < testerWheelPos.GetLength(1); c++)
                 {
-                    Assert.IsTrue(testerWheelPos[r, c]==wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
+                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
                 }
             }
         }
@@ -89,8 +83,8 @@ namespace tests
         {
             //Given
             double rT = Math.Sqrt(2) / 2;
-            double rTP = rT + .5*rT;
-            double rTM = rT - .5*rT;
+            double rTP = rT + .5 * rT;
+            double rTM = rT - .5 * rT;
             //wheel positions start at left and go cw
             wheelPosAssert = new Vector[4, 3]
             {
@@ -101,7 +95,7 @@ namespace tests
             };
             Vector[] wheelPos = getWheelPos(wheelPosAssert);
             //wheel directions start at  left and go cw
-            wheelDir = new double[4] { 7 * Math.PI/4 , 5 * Math.PI / 4, 3 * Math.PI / 4, Math.PI / 4 };
+            wheelDir = new double[4] { 7 * Math.PI / 4, 5 * Math.PI / 4, 3 * Math.PI / 4, Math.PI / 4 };
             TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
             Vector[,] testerWheelPos = tester.getWheelPositions();
 
@@ -111,7 +105,7 @@ namespace tests
             {
                 for (int c = 0; c < testerWheelPos.GetLength(1); c++)
                 {
-                    Assert.IsTrue(testerWheelPos[r, c]==wheelPosAssert[r, c], testerWheelPos[r, c]+ " " + wheelPosAssert[r, c]);
+                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
                 }
             }
         }
