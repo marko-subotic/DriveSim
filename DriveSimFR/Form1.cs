@@ -1,5 +1,7 @@
 using DriveSimFR;
 using SkiaSharp;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace DriveSimFR
 {
@@ -11,7 +13,7 @@ namespace DriveSimFR
         int counter = 0;
         public Form1()
         {
-            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30);
+            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30, 10);
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
@@ -22,7 +24,7 @@ namespace DriveSimFR
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
-            field.addCharge(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100*Math.Pow(-1,counter)));
+            field.addChargeEulers(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100*Math.Pow(1,counter)));
             canvas.Clear(SKColors.Black);
             counter++;
             using (SKPaint paint = new SKPaint())
@@ -32,13 +34,22 @@ namespace DriveSimFR
                 paint.StrokeWidth = 2;
                 paint.Style = SKPaintStyle.Stroke;
                 Vector[,,] electricFields = field.getElectricFields();
-                for(int r = 0;r< electricFields.GetLength(0);r++)
+                ArrayList electricLines = field.getElectricLines();
+
+                /*for(int r = 0;r< electricFields.GetLength(0);r++)
                 {
                     for(int c = 0; c < electricFields.GetLength(1); c++)
                     {
                         Vector p1 = new Vector(electricFields[r, c, 0]);
                         Vector p2 = p1 + electricFields[r, c, 1];
                         canvas.DrawLine(Utils.vecToPt(p1), Utils.vecToPt(p2), paint);
+                    }
+                }*/
+                foreach(LinkedList<Vector> lines in electricLines)
+                {
+                    for (LinkedListNode<Vector> node = lines.First; node.Next != null; node = node.Next)
+                    {
+                        canvas.DrawLine(Utils.vecToPt(node.Value), Utils.vecToPt(node.Next.Value), paint);
                     }
                 }
                 paint.Color = SKColors.Red;

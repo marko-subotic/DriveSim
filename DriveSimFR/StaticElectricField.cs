@@ -18,19 +18,24 @@ namespace DriveSimFR
     {
         private readonly int resolution_width;
         private readonly int resolution_height;
+        private readonly int resolution_circle;
         private readonly int width;
         private readonly int height;
         private Vector[,,] fieldVectors;
         private ArrayList charges;
         private double vectorScale = 50;
-
-        public StaticElectricField(int width, int height, int resolution_width, int resolution_height)
+        private ArrayList fieldLines;
+        private readonly double startDist = 1;
+        private readonly double step_size = 1;
+        public StaticElectricField(int width, int height, int resolution_width, int resolution_height, int resolution_circle)
         {
             this.width = width;
             this.height = height;
             this.resolution_width = resolution_width;
             this.resolution_height = resolution_height;
+            this.resolution_circle = resolution_circle;
             fieldVectors = new Vector[resolution_width, resolution_height, 2];
+            fieldLines = new ArrayList();   
             charges = new ArrayList();
             for (int r = 0; r < fieldVectors.GetLength(0); r++)
             {
@@ -42,24 +47,77 @@ namespace DriveSimFR
             }
         }
 
-        public void addCharge(PointCharge inCharge)
+        //adds a charge to the system, and calculates the vector at each sampled point of the screen.
+        //kind of a slope field solution.
+        public void addChargeSlopeField(PointCharge inCharge)
         {
-            charges.Add(inCharge);
+            addCharge(inCharge);
             for (int r = 0; r < resolution_width; r++)
             {
                 for (int c = 0; c < resolution_height; c++)
                 {
                     Vector location = fieldVectors[r,c,0];
-                    fieldVectors[r, c, 1] = new Vector();
-                    foreach (PointCharge charge in charges)
-                    {
-                        fieldVectors[r, c, 1] += Utils.unitVectorFromTheta(Utils.angleToVector(location, charge.location)) * charge.charge / charge.location.dist(location);
-                    }
+                    fieldVectors[r, c, 1] = netField(location);
                     fieldVectors[r, c, 1] *= vectorScale/fieldVectors[r, c, 1].dist();
                 }
             }
         }
 
+        //calculates lines of force starting from each charge, calculating the next point with a given
+        //step size untill the line leaves the screen. Euler's method solution.
+        public void addChargeEulers(PointCharge inCharge)
+        {
+            addCharge(inCharge);
+            for (int j = 0; j<charges.Count; j++)
+            {
+                fieldLines[j] = new LinkedList<Vector>();
+                PointCharge charge = (PointCharge)charges[j];
+                for(double i = 0; i < 2 * Math.PI; i += 2 * Math.PI / resolution_circle)
+                {
+                    Vector location = charge.location + Utils.unitVectorFromTheta(i) * startDist;
+                    LinkedList<Vector> currentTrail = (LinkedList<Vector>)fieldLines[j];
+                    while (inBounds(location))
+                    {
+                        currentTrail.AddLast(location);
+                        location += netField(location) * step_size;
+                    }
+                }
+            }
+        }
+
+        /*
+         * This is a helper method called at the beginning of each addCharge method, no matter of the
+         * method used, charges must be kept track of globaly.
+         */
+        private void addCharge(PointCharge inCharge)
+        {
+            charges.Add(inCharge);
+            fieldLines.Add(new LinkedList<Vector>());
+        }
+
+        /*
+         * This method returns the net vector of all charges at a given point. (not normalized)
+         */
+        private Vector netField(Vector point)
+        {
+            Vector net = new Vector();
+            foreach (PointCharge charge in charges)
+            {
+                net += Utils.unitVectorFromTheta(Utils.angleToVector(point, charge.location)) * charge.charge / charge.location.dist(point);
+            }
+            return net;
+        }
+
+
+        /*
+         * This method checks if a given vector is inside the screen size
+         */
+        private bool inBounds(Vector vector)
+        {
+            if(vector.x<0||vector.x>width) return false;
+            if(vector.y<0||vector.y>height) return false;
+            return true;
+        }
         /*
          * Returns a deep copy of the electric fields, where the first Vector is the location of the field, the second Vector
          * is a normalized vector in the direction of the electric field at that Vector.
@@ -78,6 +136,11 @@ namespace DriveSimFR
                 }
             }
             return deepCopy;
+        }
+
+        public ArrayList getElectricLines()
+        {
+            return fieldLines;
         }
 
         public ArrayList getCharges()
