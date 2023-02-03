@@ -13,7 +13,7 @@ namespace DriveSimFR
         int counter = 0;
         public Form1()
         {
-            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30, 10);
+            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30, 30);
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
@@ -31,7 +31,7 @@ namespace DriveSimFR
             {
                 paint.Color = SKColors.Blue;
                 paint.IsAntialias = true;
-                paint.StrokeWidth = 2;
+                paint.StrokeWidth = 5;
                 paint.Style = SKPaintStyle.Stroke;
                 Vector[,,] electricFields = field.getElectricFields();
                 ArrayList electricLines = field.getElectricLines();
@@ -45,12 +45,19 @@ namespace DriveSimFR
                         canvas.DrawLine(Utils.vecToPt(p1), Utils.vecToPt(p2), paint);
                     }
                 }*/
-                foreach(LinkedList<Vector> lines in electricLines)
+                foreach(ArrayList chargeLines in electricLines)
                 {
-                    for (LinkedListNode<Vector> node = lines.First; node.Next != null; node = node.Next)
+                    foreach(LinkedList<Vector> lines in chargeLines)
                     {
-                        canvas.DrawLine(Utils.vecToPt(node.Value), Utils.vecToPt(node.Next.Value), paint);
+                        if (lines.Count > 0)
+                        {
+                            for (LinkedListNode<Vector> node = lines.First; node.Next != null; node = node.Next)
+                            {
+                                canvas.DrawLine(Utils.vecToPt(node.Value), Utils.vecToPt(node.Next.Value), paint);
+                            }
+                        }
                     }
+                    
                 }
                 paint.Color = SKColors.Red;
                 foreach(PointCharge charge in field.getCharges())

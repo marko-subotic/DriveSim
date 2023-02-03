@@ -26,7 +26,7 @@ namespace DriveSimFR
         private double vectorScale = 50;
         private ArrayList fieldLines;
         private readonly double startDist = 1;
-        private readonly double step_size = 1;
+        private readonly double step_size = .5;
         public StaticElectricField(int width, int height, int resolution_width, int resolution_height, int resolution_circle)
         {
             this.width = width;
@@ -70,16 +70,20 @@ namespace DriveSimFR
             addCharge(inCharge);
             for (int j = 0; j<charges.Count; j++)
             {
-                fieldLines[j] = new LinkedList<Vector>();
                 PointCharge charge = (PointCharge)charges[j];
-                for(double i = 0; i < 2 * Math.PI; i += 2 * Math.PI / resolution_circle)
+                fieldLines[j] = new ArrayList();
+                ArrayList chargeList = (ArrayList)fieldLines[j];
+                for (int i = 0; i < resolution_circle; i ++)
                 {
-                    Vector location = charge.location + Utils.unitVectorFromTheta(i) * startDist;
-                    LinkedList<Vector> currentTrail = (LinkedList<Vector>)fieldLines[j];
+                    double theta = (double)i * 2* Math.PI / resolution_circle;
+                    chargeList.Add(new LinkedList<Vector>());
+                    Vector location = charge.location + Utils.unitVectorFromTheta(theta) * startDist;
+                    LinkedList<Vector> currentTrail = (LinkedList<Vector>)chargeList[i];
                     while (inBounds(location))
                     {
                         currentTrail.AddLast(location);
-                        location += netField(location) * step_size;
+                        Vector net_field = netField(location);
+                        location += net_field * step_size / net_field.dist() ;
                     }
                 }
             }
@@ -92,7 +96,7 @@ namespace DriveSimFR
         private void addCharge(PointCharge inCharge)
         {
             charges.Add(inCharge);
-            fieldLines.Add(new LinkedList<Vector>());
+            fieldLines.Add(new ArrayList());
         }
 
         /*
