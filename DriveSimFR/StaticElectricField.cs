@@ -25,7 +25,7 @@ namespace DriveSimFR
         private ArrayList charges;
         private double vectorScale = 50;
         private ArrayList fieldLines;
-        private readonly double startDist = 1;
+        private readonly double startDist = 2;
         private readonly double step_size = .5;
         public StaticElectricField(int width, int height, int resolution_width, int resolution_height, int resolution_circle)
         {
@@ -79,11 +79,11 @@ namespace DriveSimFR
                     chargeList.Add(new LinkedList<Vector>());
                     Vector location = charge.location + Utils.unitVectorFromTheta(theta) * startDist;
                     LinkedList<Vector> currentTrail = (LinkedList<Vector>)chargeList[i];
-                    while (inBounds(location))
+                    while (inBounds(location,charge))
                     {
                         currentTrail.AddLast(location);
                         Vector net_field = netField(location);
-                        location += net_field * step_size / net_field.dist() ;
+                        location += net_field * step_size / net_field.dist() * (charge.charge>0 ? 1 : -1);
                     }
                 }
             }
@@ -116,10 +116,18 @@ namespace DriveSimFR
         /*
          * This method checks if a given vector is inside the screen size
          */
-        private bool inBounds(Vector vector)
+        private bool inBounds(Vector vector, PointCharge inCharge)
         {
             if(vector.x<0||vector.x>width) return false;
             if(vector.y<0||vector.y>height) return false;
+            foreach(PointCharge charge in charges)
+            {
+                if (charge.location != inCharge.location)
+                {
+                    if (vector.dist(charge.location) < 15) return false;
+
+                }
+            }
             return true;
         }
         /*

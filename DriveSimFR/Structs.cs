@@ -60,7 +60,7 @@ namespace DriveSimFR
         }
         public static bool operator !=(Vector p1, Vector p2)
         {
-            return (p1==p2);
+            return !(p1==p2);
         }
 
         public override string ToString()

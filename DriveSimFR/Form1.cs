@@ -24,7 +24,7 @@ namespace DriveSimFR
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
-            field.addChargeEulers(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100*Math.Pow(1,counter)));
+            field.addChargeEulers(new PointCharge(new Vector(pictureBox1.PointToClient(System.Windows.Forms.Control.MousePosition)), 100*Math.Pow(-1,counter)));
             canvas.Clear(SKColors.Black);
             counter++;
             using (SKPaint paint = new SKPaint())
