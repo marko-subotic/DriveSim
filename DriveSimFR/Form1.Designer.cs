@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.Windows.Forms;
 
 namespace DriveSimFR
 {
@@ -43,6 +44,7 @@ namespace DriveSimFR
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.KeyUp += this.pictureBox1_KeyUp;
             // 
             // Form1
             // 
@@ -54,14 +56,7 @@ namespace DriveSimFR
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
-            canvas.Clear(SKColors.Black);
-            using (SKImage image = surface.Snapshot())
-            using (SKData data = image.Encode(SKEncodedImageFormat.Png, 100))
-            using (MemoryStream mStream = new MemoryStream(data.ToArray()))
-            {
-                Bitmap bm = new Bitmap(mStream, false);
-                pictureBox1.Image = bm;
-            }
+            
 
         }
 

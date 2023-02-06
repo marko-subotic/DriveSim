@@ -70,6 +70,11 @@ namespace DriveSimFR
         {
             return new SKPoint((int)vector.x, (int)vector.y);
         }
+
+        public static SKRect rectToSK(Rect rect)
+        {
+            return new SKRect((float)rect.location.x, (float)rect.location.y, (float)(rect.location.x+rect.size.x), (float)(rect.location.y+rect.size.y));
+        }
         /*
          * returns cross product of two vectors
          */

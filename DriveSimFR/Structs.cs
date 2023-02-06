@@ -87,4 +87,49 @@ namespace DriveSimFR
         }
     }
 
+    public struct Rect
+    {
+        public Vector location;
+        public Vector size;
+        public Vector center;
+
+        public Rect(Vector location, Vector size)
+        {
+            this.location = location;
+            this.size = size;
+            center = new Vector(location+size/2);
+        }
+        public Rect(double x1, double y1, double x2, double y2)
+        {
+            if (x1 < 0 || y1 < 0)
+            {
+                throw new ArgumentException("coordinates less than 0");
+            }
+            this.location = new Vector(x1,y1);
+            this.size = new Vector(x2, y2);
+            center = new Vector(location + size / 2);
+        }
+        public bool contains(Vector point)
+        {
+            if (point.x > this.location.x && point.x < this.location.x + this.size.x)
+            {
+                if (point.y > this.location.y && point.y < this.location.y + this.size.y)
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    public struct MyButton
+    {
+        public Rect rectangle;
+        public string text;
+
+        public MyButton(Rect rectangle, string text)
+        {
+            this.rectangle = rectangle;
+            this.text = text;
+        }
+    }
+
 }

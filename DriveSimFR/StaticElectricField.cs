@@ -70,7 +70,7 @@ namespace DriveSimFR
             addCharge(inCharge);
             for (int j = 0; j<charges.Count; j++)
             {
-                PointCharge charge = (PointCharge)charges[j];
+                   PointCharge charge = (PointCharge)charges[j];
                 fieldLines[j] = new ArrayList();
                 ArrayList chargeList = (ArrayList)fieldLines[j];
                 for (int i = 0; i < resolution_circle; i ++)
@@ -98,7 +98,22 @@ namespace DriveSimFR
             charges.Add(inCharge);
             fieldLines.Add(new ArrayList());
         }
-
+        
+        /*
+         * Will clear away all charges and lines holding anything. essentially a reset.
+         */
+        public void clearCharges()
+        {
+            fieldLines.Clear();
+            charges.Clear();
+            for(int i = 0; i < fieldVectors.GetLength(0); i++){
+                for (int j = 0; j < fieldVectors.GetLength(1); j++)
+                {
+                    fieldVectors[i,j,0] = new Vector();
+                    fieldVectors[i, j, 1] = new Vector();
+                }
+            }
+        }
         /*
          * This method returns the net vector of all charges at a given point. (not normalized)
          */
