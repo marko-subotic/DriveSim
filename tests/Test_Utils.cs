@@ -97,5 +97,16 @@ namespace tests
             Assert.IsTrue(test == target, test + " | " + target);
         }
 
+        [TestMethod]
+        public void alignCenter()
+        {
+            //given
+            Rect target = new Rect(5, 5, 10, 10);
+            Rect test = DrawingUtils.alignCenter(10,10,10,10);
+
+            //then
+            Assert.IsTrue(test == target, test + " | " + target);
+        }
+
     }
 }

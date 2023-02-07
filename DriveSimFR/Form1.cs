@@ -46,70 +46,7 @@ namespace DriveSimFR
             sendFrame();
 
         }
-        private void drawChargeSlope(SKCanvas canvas, bool positive)
-        {
-            field.addChargeSlopeField(new PointCharge(new Vector(pictureBox1.PointToClient(Control.MousePosition)), 100 * (positive ? 1 : -1)));
-            using (SKPaint paint = new SKPaint())
-            {
-                paint.Color = SKColors.Blue;
-                paint.IsAntialias = true;
-                paint.StrokeWidth = 5;
-                paint.Style = SKPaintStyle.Stroke;
-                Vector[,,] electricFields = field.getElectricFields();
-                for(int r = 0;r< electricFields.GetLength(0);r++)
-                {
-                    for(int c = 0; c < electricFields.GetLength(1); c++)
-                    {
-                        Vector p1 = new Vector(electricFields[r, c, 0]);
-                        Vector p2 = p1 + electricFields[r, c, 1];
-                        canvas.DrawLine(Utils.vecToPt(p1), Utils.vecToPt(p2), paint);
-                    }
-                }
-                paint.Color = SKColors.Red;
-                foreach (PointCharge charge in field.getCharges())
-                {
-                    canvas.DrawCircle(Utils.vecToPt(charge.location), 10, paint);
 
-                }
-            }
-        }
-
-        private void drawChargeEulers(SKCanvas canvas, bool positive)
-        {
-            SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
-
-            field.addChargeEulers(new PointCharge(new Vector(pictureBox1.PointToClient(Control.MousePosition)), 100 * (positive ? 1: -1)));
-            canvas.Clear(SKColors.Black);
-            using (SKPaint paint = new SKPaint())
-            {
-                paint.Color = SKColors.Blue;
-                paint.IsAntialias = true;
-                paint.StrokeWidth = 5;
-                paint.Style = SKPaintStyle.Stroke;
-                ArrayList electricLines = field.getElectricLines();
-                foreach (ArrayList chargeLines in electricLines)
-                {
-                    foreach (LinkedList<Vector> lines in chargeLines)
-                    {
-                        if (lines.Count > 0)
-                        {
-                            for (LinkedListNode<Vector> node = lines.First; node.Next != null; node = node.Next)
-                            {
-                                canvas.DrawLine(Utils.vecToPt(node.Value), Utils.vecToPt(node.Next.Value), paint);
-                            }
-                        }
-                    }
-
-                }
-                paint.Color = SKColors.Red;
-                foreach (PointCharge charge in field.getCharges())
-                {
-                    canvas.DrawCircle(Utils.vecToPt(charge.location), 10, paint);
-
-                }
-                
-            }
-        }
         private void sendFrame()
         {
             using (SKImage image = surface.Snapshot())

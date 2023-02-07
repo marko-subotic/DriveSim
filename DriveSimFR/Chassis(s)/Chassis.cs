@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
  * **/
 public abstract class Chassis
 {
-    protected readonly int NUM_WHEELS = 4;
+    protected static readonly int NUM_WHEELS = 4;
     public static readonly double MAX_SPEED;
     public static readonly double K_ROT;
     protected readonly double wheelLength;
@@ -21,20 +21,47 @@ public abstract class Chassis
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
     //center of chassis will be origin of local coordinate system housing wheel positions.
     protected Vector[,] wheelPositions;
-    //for now radius is not necessary here, should be used to position the wheels for ordinary
-    //chassis such as tank drive or X-drive.
-    protected double radius;
+    
     //index of each wheel corresponds to wheel direction&wheelPositions
     protected double[] wheelVelos;
     protected double[] wheelPowers;
     protected Vector position;
     protected double header;
 
-    public Chassis(int radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP)
+    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP)
     {
         wheelVelos= new double[NUM_WHEELS];
         wheelPowers = new double[NUM_WHEELS];
-        this.radius = radius;
+        this.position = position;
+        header = 0;
+        this.WHEEL_PROP = WHEELS_PROP;
+        wheelLength = radius / WHEEL_PROP;
+        this.wheelDirections = new double[NUM_WHEELS];
+        if (wheelDirections != null)
+        {
+            for (int i = 0; i < wheelDirections.GetLength(0); i++)
+            {
+                this.wheelDirections[i] = wheelDirections[i];
+            }
+            this.wheelPositions = new Vector[NUM_WHEELS, 3];
+           
+            for (int i = 0; i < NUM_WHEELS; i++)
+            {
+                this.wheelPositions[i, 0] = wheelPositions[i];
+                this.wheelPositions[i, 1] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
+                this.wheelPositions[i, 2] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
+            }
+        }
+        
+    }
+    
+    /*
+     * This method is a secondary constructor so that I can call a constructor inside the actual constructor of sub-classes.
+     */
+    protected void constructor(double[] wheelDirections, Vector[] wheelPositions, Vector position)
+    {
+        wheelVelos = new double[NUM_WHEELS];
+        wheelPowers = new double[NUM_WHEELS];
         this.position = position;
         header = 0;
         this.wheelDirections = new double[wheelDirections.Length];
@@ -43,8 +70,6 @@ public abstract class Chassis
             this.wheelDirections[i] = wheelDirections[i];
         }
         this.wheelPositions = new Vector[NUM_WHEELS, 3];
-        this.WHEEL_PROP = WHEELS_PROP;
-        wheelLength = radius / WHEEL_PROP;
         for (int i = 0; i < NUM_WHEELS; i++)
         {
             this.wheelPositions[i, 0] = wheelPositions[i];

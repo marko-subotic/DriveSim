@@ -73,6 +73,7 @@ namespace DriveSimFR
             return Math.Sqrt(Math.Pow(x-origin.x,2) + Math.Pow(y - origin.y, 2));
         }
 
+
     }
 
     public struct PointCharge
@@ -109,6 +110,17 @@ namespace DriveSimFR
             this.size = new Vector(x2, y2);
             center = new Vector(location + size / 2);
         }
+
+        public static bool operator ==(Rect r1, Rect r2)
+        {
+            return r1.location == r2.location && r1.size == r2.size;
+        }
+
+        public static bool operator !=(Rect r1, Rect r2)
+        {
+            return !(r1 == r2);
+        }
+
         public bool contains(Vector point)
         {
             if (point.x > this.location.x && point.x < this.location.x + this.size.x)
@@ -130,6 +142,8 @@ namespace DriveSimFR
             this.rectangle = rectangle;
             this.text = text;
         }
+
+        
     }
 
 }

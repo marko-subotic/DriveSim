@@ -11,10 +11,11 @@ namespace tests
         int num_wheels = 4;
         Vector[,] wheelPosAssert;
         double[] wheelDir;
+        int radius = 5;
         Vector position = new Vector();
 
         /*
-         * Helper method that will just 
+         * Helper method that will just return a vector array with all of the first values of a sub-array
          */
         public Vector[] getWheelPos(Vector[,] wheelPos)
         {
@@ -25,8 +26,9 @@ namespace tests
             }
             return rtrn;
         }
+
         [TestMethod]
-        public void TestChassisConstructor_TankDrive()
+        public void TestChassisConstructor_CustomTankDrive()
         {
             //Given
             double rT = Math.Sqrt(2)/2;
@@ -51,13 +53,13 @@ namespace tests
             {
                 for(int c = 0; c < testerWheelPos.GetLength(1); c++)
                 {
-                    Assert.AreEqual(testerWheelPos[r,c], wheelPosAssert[r,c]);
+                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
                 }
             }
         }
 
         [TestMethod]
-        public void TestChassisConstructor_XDrive_Normal()
+        public void TestChassisConstructor_Custom_XDrive_Normal()
         {
             //wheel positions start at left and go cw
             wheelPosAssert = new Vector[4, 3]
@@ -85,7 +87,7 @@ namespace tests
         }
 
         [TestMethod]
-        public void TestChassisConstructor_XDrive_Angle()
+        public void TestChassisConstructor_Custom_XDrive_Angle()
         {
             //Given
             double rT = Math.Sqrt(2) / 2;
@@ -113,6 +115,90 @@ namespace tests
                 {
                     Assert.IsTrue(testerWheelPos[r, c]==wheelPosAssert[r, c], testerWheelPos[r, c]+ " " + wheelPosAssert[r, c]);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void TestChassisConstructor_TankDrive()
+        {
+            //Given
+            //Given
+            double rT = Math.Sqrt(2) / 2 *radius;
+            double rTP = rT + .5;
+            double rTM = rT - .5;
+            int strokeWidth = 1;
+            //wheel positions start at top left and go cw
+            wheelPosAssert = new Vector[4, 3]
+            {
+                {new Vector(-rT, rT), new Vector(-rT, rTP), new Vector(-rT, rTM)},
+                {new Vector(rT,rT), new Vector(rT, rTP), new Vector(rT, rTM)},
+                {new Vector(rT, -rT), new Vector(rT, -rTM), new Vector(rT, -rTP)},
+                {new Vector(-rT,-rT), new Vector(-rT, -rTM), new Vector(-rT, -rTP)},
+            };
+            Vector[] headerLine = new Vector[] { new Vector(), new Vector(0, radius) };
+            Vector[] bodyAssert = new Vector[4]
+                {new Vector(-rT+strokeWidth, rT), new Vector(rT-strokeWidth,rT), new Vector(rT-strokeWidth, -rT), new Vector(-rT+strokeWidth,-rT) };
+            Vector[] wheelPos = getWheelPos(wheelPosAssert);
+            wheelDir = new double[4] { 0, 0, 0, 0 };
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius);
+            Vector[,] testerWheelPos = tester.getWheelPositions();
+            Vector[] testerBody = tester.getBody();
+            Vector[] testerHeader = tester.getHeaderLine();
+
+            //then
+            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
+            {
+                Assert.IsTrue(bodyAssert[r] == testerBody[r],"body: " + bodyAssert[r] + ")( " + testerBody[r]);
+                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
+                {
+                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], r + ", " + c+ " wheels: " + testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
+                }
+            }
+            for(int i = 0; i < testerHeader.Length; i++)
+            {
+                Assert.IsTrue(testerHeader[i] == headerLine[i], "header line: " + headerLine[i] + " " + testerHeader[i]);
+            }
+        }
+
+        [TestMethod]
+        public void TestChassisConstructor_XDrive()
+        {
+            //Given
+            //Given
+            double rT = Math.Sqrt(2) / 2*radius;
+            double rTP = rT + .5 * rT/radius;
+            double rTM = rT - .5 * rT/radius;
+            int strokeWidth = 1;
+            //wheel positions start at left and go cw
+            wheelPosAssert = new Vector[4, 3]
+            {
+                {new Vector(-rT, rT), new Vector(-rTM, rTP), new Vector(-rTP, rTM)},
+                {new Vector(rT,rT), new Vector(rTP, rTM), new Vector(rTM, rTP), },
+                {new Vector(rT, -rT), new Vector(rTM, -rTP), new Vector(rTP, -rTM), },
+                {new Vector(-rT,-rT), new Vector(-rTP, -rTM), new Vector(-rTM, -rTP)} ,
+            };
+            Vector[] headerLine = new Vector[] { new Vector(), new Vector(0, radius) };
+            Vector[] bodyAssert = new Vector[4]
+                {new Vector(-rT+strokeWidth, rT), new Vector(rT-strokeWidth,rT), new Vector(rT-strokeWidth, -rT), new Vector(-rT+strokeWidth,-rT) };
+            Vector[] wheelPos = getWheelPos(wheelPosAssert);
+            wheelDir = new double[4] { 7 * Math.PI / 4, 5 * Math.PI / 4, 3 * Math.PI / 4, Math.PI / 4 };
+            XChassis tester = new XChassis(radius, position, strokeWidth, radius);
+            Vector[,] testerWheelPos = tester.getWheelPositions();
+            Vector[] testerBody = tester.getBody();
+            Vector[] testerHeader = tester.getHeaderLine();
+
+            //then
+            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
+            {
+                Assert.IsTrue(bodyAssert[r] == testerBody[r], "body: " + bodyAssert[r] + " " + testerBody[r]);
+                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
+                {
+                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], r + ", " + c + " wheels: " + testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
+                }
+            }
+            for (int i = 0; i < testerHeader.Length; i++)
+            {
+                Assert.IsTrue(testerHeader[i] == headerLine[i], "header line: " + headerLine[i] + " " + testerHeader[i]);
             }
         }
     }
