@@ -10,12 +10,14 @@ using System.Runtime.CompilerServices;
 public abstract class Chassis
 {
     protected static readonly int NUM_WHEELS = 4;
-    public static readonly double MAX_SPEED;
+    //pixels-per-second
+    public readonly double MAX_SPEED;
     public static readonly double K_ROT;
     protected readonly double wheelLength;
     protected readonly double WHEEL_PROP;
-    protected readonly double frictionCoeff = 1;
-
+    protected readonly double K_FRIC;
+    protected readonly double LOW_CUTOFF = 0.1;
+    protected readonly double MASS;
     // in radians, 0 is straight up
     protected double[] wheelDirections;
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
@@ -27,8 +29,11 @@ public abstract class Chassis
     protected double[] wheelPowers;
     protected Vector position;
     protected double header;
+    protected Vector linVelocity;
+    protected double angVelocity;
+    
 
-    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP)
+    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric = .2, double mass = 1)
     {
         wheelVelos= new double[NUM_WHEELS];
         wheelPowers = new double[NUM_WHEELS];
@@ -37,6 +42,11 @@ public abstract class Chassis
         this.WHEEL_PROP = WHEELS_PROP;
         wheelLength = radius / WHEEL_PROP;
         this.wheelDirections = new double[NUM_WHEELS];
+        linVelocity = new Vector();
+        angVelocity = 0;
+        MAX_SPEED = max_speed;
+        K_FRIC = k_fric;
+        MASS= mass;
         if (wheelDirections != null)
         {
             for (int i = 0; i < wheelDirections.GetLength(0); i++)
@@ -191,6 +201,35 @@ public abstract class Chassis
         return adder;
     }
 
+    /*
+     * Returns position of center of this robot globally
+     */
+    public Vector getPos()
+    {
+        return position;
+    }
 
+    /*
+     * Returns heading of robot; 0 is straight up towards Y-axis.
+     */
+    public double getHeading()
+    {
+        return header;
+    }
+
+    /*
+     * Sets heading to the specified angle
+     */
+    public void setHeading(double heading)
+    {
+        header = heading;
+    }
+    /*
+     * Returns array of wheel velocities;
+     */
+    public double[] getWheelVelos()
+    {
+        return wheelVelos;
+    }
     
 }

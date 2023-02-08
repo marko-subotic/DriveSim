@@ -6,10 +6,12 @@ namespace tests
     public class Test_Chassis_Step
     {
         int num_wheels = 4;
-        Vector[,] wheelPosAssert;
-        double[] wheelDir;
+        int strokeWidth = 1;
         Vector position = new Vector();
-
+        int radius = 5;
+        int max_speed = 10;
+        double k_fric = .2;
+        double mass = 1;
         public Vector[] getWheelPos(Vector[,] wheelPos)
         {
             Vector[] rtrn = new Vector[num_wheels];
@@ -20,93 +22,124 @@ namespace tests
             return rtrn;
         }
         [TestMethod]
-        public void TestChassisConstructor_TankDrive()
+        public void TestTankStep_NoStartingVeloStraight()
         {
             //Given
-            double rT = Math.Sqrt(2) / 2;
-            double rTP = rT + .5;
-            double rTM = rT - .5;
-            //wheel positions start at top left and go cw
-            wheelPosAssert = new Vector[4, 3]
-            {
-                {new Vector(-rT, rT), new Vector(-rT, rTP), new Vector(-rT, rTM)},
-                {new Vector(rT,rT), new Vector(rT, rTP), new Vector(rT, rTM)},
-                {new Vector(rT, -rT), new Vector(rT, -rTM), new Vector(rT, -rTP)},
-                {new Vector(-rT,-rT), new Vector(-rT, -rTM), new Vector(-rT, -rTP)},
-            };
-            Vector[] wheelPos = getWheelPos(wheelPosAssert);
-            wheelDir = new double[4] { 0, 0, 0, 0 };
-            TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
-            Vector[,] testerWheelPos = tester.getWheelPositions();
+            double step_size = 2;
+            double K = max_speed * k_fric / mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, mass);
+            double[] wheelPows = new double[] { 1, 1, 1, 1 };
+            Vector expectedLinVelo = new Vector(0, num_wheels*K*wheelPows[0]*step_size);
+            double expectedAngVelo = 0;
+            Vector expectedPos = new Vector(0, .5 * K * wheelPows[0] * step_size * step_size*num_wheels);
+            double expectedHead = 0;
+            double wlSpd = expectedLinVelo.y;
+            double[] expectedWheelVelos = new double[] { wlSpd, wlSpd, wlSpd, wlSpd };
 
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
 
             //then
-            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
+            Assert.IsTrue(tester.getLinVelo() == expectedLinVelo);
+            Assert.IsTrue(tester.getAngVelo() == expectedAngVelo);
+            Assert.IsTrue(tester.getPos()==expectedPos);
+            Assert.IsTrue(tester.getHeading() == expectedHead);
+            for(int i =0;i<num_wheels;i++)
             {
-                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
-                {
-                    Assert.AreEqual(testerWheelPos[r, c], wheelPosAssert[r, c]);
-                }
+                Assert.IsTrue(Math.Abs(tester.getWheelVelos()[i]- expectedWheelVelos[i])<.001, tester.getWheelVelos()[i].ToString() + "  )( " + expectedWheelVelos[i].ToString());
             }
         }
 
         [TestMethod]
-        public void TestChassisConstructor_XDrive_Normal()
+        public void TestTankStep_NoStartingVeloSpin()
         {
-            //wheel positions start at left and go cw
-            wheelPosAssert = new Vector[4, 3]
-            {
-                {new Vector(-1, 0), new Vector(-1, .5), new Vector(-1, -.5)},
-                {new Vector(0,1), new Vector(.5, 1), new Vector(-.5, 1), },
-                {new Vector(1, 0), new Vector(1, -.5), new Vector(1, .5), },
-                {new Vector(0,-1), new Vector(-.5, -1), new Vector(.5, -1)} ,
-            };
-            Vector[] wheelPos = getWheelPos(wheelPosAssert);
-            //wheel directions start at  left and go cw
-            wheelDir = new double[4] { 0, 3 * Math.PI / 2, Math.PI, Math.PI / 2 };
-            TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
-            Vector[,] testerWheelPos = tester.getWheelPositions();
-
+            //Given
+            double rT = Math.Sqrt(2) / 2;
+            double step_size = 2;
+            double K = max_speed * k_fric / mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, mass);
+            double[] wheelPows = new double[] { 1, -1, -1, 1 };
+            Vector expectedLinVelo = new Vector();
+            double expectedAngVelo = -num_wheels*K*wheelPows[0]*Math.Pow(step_size,2)/radius;
+            Vector expectedPos = new Vector();
+            double expectedHead = Utils.mod2PI(-(.5 * K * wheelPows[0]/radius*Math.Pow(step_size,2)*num_wheels));
+            double wlSpd = expectedAngVelo * rT*radius;
+            double[] expectedWheelVelos = new double[] { wlSpd, -wlSpd, -wlSpd, wlSpd };
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
 
             //then
-            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
+            Assert.IsTrue(tester.getLinVelo() == expectedLinVelo);
+            Assert.IsTrue(tester.getAngVelo() == expectedAngVelo);
+            Assert.IsTrue(tester.getPos() == expectedPos);
+            Assert.IsTrue(tester.getHeading() == expectedHead);
+            for (int i = 0; i < num_wheels; i++)
             {
-                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
-                {
-                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
-                }
+                Assert.IsTrue(Math.Abs(tester.getWheelVelos()[i] - expectedWheelVelos[i]) < .001, tester.getWheelVelos()[i].ToString() + "  )( " + expectedWheelVelos[i].ToString());
             }
         }
 
         [TestMethod]
-        public void TestChassisConstructor_XDrive_Angle()
+        public void TestTankStep_MaxStartingVeloStraight()
         {
             //Given
             double rT = Math.Sqrt(2) / 2;
-            double rTP = rT + .5 * rT;
-            double rTM = rT - .5 * rT;
-            //wheel positions start at left and go cw
-            wheelPosAssert = new Vector[4, 3]
-            {
-                {new Vector(-rT, rT), new Vector(-rTM, rTP), new Vector(-rTP, rTM)},
-                {new Vector(rT,rT), new Vector(rTP, rTM), new Vector(rTM, rTP), },
-                {new Vector(rT, -rT), new Vector(rTM, -rTP), new Vector(rTP, -rTM), },
-                {new Vector(-rT,-rT), new Vector(-rTP, -rTM), new Vector(-rTM, -rTP)} ,
-            };
-            Vector[] wheelPos = getWheelPos(wheelPosAssert);
-            //wheel directions start at  left and go cw
-            wheelDir = new double[4] { 7 * Math.PI / 4, 5 * Math.PI / 4, 3 * Math.PI / 4, Math.PI / 4 };
-            TestChassis tester = new TestChassis(wheelDir, wheelPos, position);
-            Vector[,] testerWheelPos = tester.getWheelPositions();
-
+            double step_size = 1;
+            double K = max_speed * k_fric / mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, mass);
+            tester.setHeading(Math.PI * 7 / 4);
+            double[] wheelPows = new double[] { 1, 1, 1, 1 };
+            Vector expectedLinVelo = new Vector(0, max_speed);
+            double expectedAngVelo = 0;
+            Vector expectedPos = new Vector(rT * max_speed, rT * max_speed);
+            double expectedHead = Math.PI*7/4;
+            double wlSpd = max_speed;
+            double[] expectedWheelVelos = new double[] { wlSpd, wlSpd, wlSpd, wlSpd };
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
 
             //then
-            for (int r = 0; r < testerWheelPos.GetLength(0); r++)
+            Assert.IsTrue(tester.getLinVelo() == expectedLinVelo);
+            Assert.IsTrue(tester.getAngVelo() == expectedAngVelo);
+            Assert.IsTrue(tester.getPos() == expectedPos);
+            Assert.IsTrue(tester.getHeading() == expectedHead);
+            for (int i = 0; i < num_wheels; i++)
             {
-                for (int c = 0; c < testerWheelPos.GetLength(1); c++)
-                {
-                    Assert.IsTrue(testerWheelPos[r, c] == wheelPosAssert[r, c], testerWheelPos[r, c] + " " + wheelPosAssert[r, c]);
-                }
+                Assert.IsTrue(Math.Abs(tester.getWheelVelos()[i] - expectedWheelVelos[i]) < .001, tester.getWheelVelos()[i].ToString() + "  )( " + expectedWheelVelos[i].ToString());
+            }
+        }
+
+        [TestMethod]
+        public void TestXStep_MaxStartingVeloStraight()
+        {
+            //Given
+            double rT = Math.Sqrt(2) / 2;
+            double step_size = 1;
+            double K = max_speed * k_fric / mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, mass);
+            tester.setHeading(Math.PI * 7 / 4);
+            double[] wheelPows = new double[] { 1, 1, 1, 1 };
+            Vector expectedLinVelo = new Vector(0, max_speed*1/rT);
+            double expectedAngVelo = 0;
+            Vector expectedPos = new Vector(1/rT * max_speed, 1/rT * max_speed);
+            double expectedHead = Math.PI * 7 / 4;
+            double wlSpd = max_speed;
+            double[] expectedWheelVelos = new double[] { wlSpd, wlSpd, wlSpd, wlSpd };
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
+
+            //then
+            Assert.IsTrue(tester.getLinVelo() == expectedLinVelo);
+            Assert.IsTrue(tester.getAngVelo() == expectedAngVelo);
+            Assert.IsTrue(tester.getPos() == expectedPos);
+            Assert.IsTrue(tester.getHeading() == expectedHead);
+            for (int i = 0; i < num_wheels; i++)
+            {
+                Assert.IsTrue(Math.Abs(tester.getWheelVelos()[i] - expectedWheelVelos[i]) < .001, tester.getWheelVelos()[i].ToString() + "  )( " + expectedWheelVelos[i].ToString());
             }
         }
     }

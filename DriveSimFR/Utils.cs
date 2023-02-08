@@ -75,6 +75,15 @@ namespace DriveSimFR
         {
             return new SKRect((float)rect.location.x, (float)rect.location.y, (float)(rect.location.x+rect.size.x), (float)(rect.location.y+rect.size.y));
         }
+
+        public static double mod2PI(double mod)
+        {
+            while (mod < 0 || mod > 2 * Math.PI)
+            {
+                mod += 2 * Math.PI * (mod < 0 ? 1 : -1);
+            }
+            return mod;
+        }
         /*
          * returns cross product of two vectors
          */
