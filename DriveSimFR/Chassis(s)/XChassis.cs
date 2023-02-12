@@ -8,7 +8,6 @@ namespace DriveSimFR
 {
     public class XChassis : Chassis
     {
-        double radius;
         Vector[] body;
         Vector[] headerLine;
         int strokeWidth;

@@ -12,7 +12,7 @@ public abstract class Chassis
     protected static readonly int NUM_WHEELS = 4;
     //pixels-per-second
     public readonly double MAX_SPEED;
-    public static readonly double K_ROT;
+    public static readonly double K_ROT = 1;
     protected readonly double wheelLength;
     protected readonly double WHEEL_PROP;
     protected readonly double K_FRIC;
@@ -103,7 +103,7 @@ public abstract class Chassis
             {
                 throw new Exception("Too much power");
             }
-            this.wheelPowers[i] = wheelPowers[i]*MAX_SPEED;
+            this.wheelPowers[i] = wheelPowers[i];
         }
     }
 
@@ -128,45 +128,56 @@ public abstract class Chassis
         return globals;
     }
 
-    public Vector[,] getWheelPositions() { return wheelPositions; }
 
     /*
      * This will calculate out the next position given the current state of the chassis as well as
-     * time gone forward. Don't want to solve differential equations so this will be used kind of
-     * like Euler's method with small step sizes.
+     * time gone forward. Don't want to solve differential equations so this will be used like Euler's method 
+     * with small step sizes and assuming constant acceleration in between steps(newtonian mechanics).
      */
     public void step(double time)
     {
-
+        if (time < 0)
+        {
+            throw new Exception("negative time");
+        }
+        Vector accel = Utils.rotateVector(header,getNetAccel());
+        double alpha = getNetAlpha();
+        position.x += linVelocity.x * time + .5 * accel.x * time * time;
+        position.y += linVelocity.y * time + .5 * accel.y * time * time;
+        linVelocity.x += accel.x*time;
+        linVelocity.y += accel.y*time;
+        header += angVelocity * time + .5 * alpha * time * time;
+        angVelocity += alpha * time;
+        calcWheelVelos();
     }
 
     /*
      * this will calculate the linear velocity of the chassis given the state of the chassis, in
      * the local coordinate system of the chassis.
      */
-    public Vector getLinVelo()
+    public Vector getNetAccel()
     {
         Vector deltaV = new Vector();
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            Vector adder = getVeloVector(wheelVelos[i], wheelDirections[i]);
+            Vector adder = getVeloVector(wheelPowers[i] * MAX_SPEED*K_FRIC - wheelVelos[i]*K_FRIC, wheelDirections[i]);
             deltaV += adder;
 
         }
-        return deltaV;
+        return deltaV/MASS;
     }
 
     /*
      * this will calculate the angular velocity of the chassis given the state of the chassis.
      * positive is turning ccw, negative is cw.
      */
-    public double getAngVelo()
+    public double getNetAlpha()
     {
         double deltaO = 0;
         for (int i = 0; i < wheelVelos.GetLength(0); i++)
         {
-            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
-            deltaO += angTo * wheelVelos[i] * K_ROT / wheelPositions[i, 0].dist();
+            double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
+            deltaO += (wheelPowers[i] * MAX_SPEED * K_FRIC - wheelVelos[i] * K_FRIC)* Math.Sin(angTo) / wheelPositions[i, 0].dist()*K_ROT/MASS;
         }
         return deltaO;
     }
@@ -195,12 +206,27 @@ public abstract class Chassis
      * **/
     private Vector getVeloVector(double magnitude, double heading)
     {
-        Vector adder = new Vector(magnitude);
-        adder.x *= -Math.Sin(heading);
-        adder.y *= Math.Cos(heading);
-        return adder;
+        return Utils.unitVectorFromTheta(heading)*magnitude;
     }
 
+    /*
+     * Given the state of the chassis (angular and linear velocities), returns the linear speed of each
+     * wheel.
+     */
+    private void calcWheelVelos()
+    {
+        for(int i = 0; i<wheelVelos.GetLength(0); i++)
+        {
+            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
+            wheelVelos[i] += Math.Sin(angTo) * angVelocity * wheelPositions[i, 2].dist();
+            if (linVelocity.dist() > 0)
+            {
+                double linTo = wheelDirections[i] - Utils.angleToVector(linVelocity);
+                wheelVelos[i] += Math.Cos(linTo) * linVelocity.dist();
+
+            }
+        }
+    }
     /*
      * Returns position of center of this robot globally
      */
@@ -231,5 +257,11 @@ public abstract class Chassis
     {
         return wheelVelos;
     }
-    
+
+    /*
+     * Returns array of wheel positions;
+     */
+    public Vector[,] getWheelPositions() { return wheelPositions; }
+
+
 }

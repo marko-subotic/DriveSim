@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,11 @@ namespace DriveSimFR
         public override string ToString()
         {
             return this.x.ToString() + ", "+ this.y.ToString();
+        }
+
+        public  bool Equals(Vector obj)
+        {
+            return this==obj;
         }
 
         public double dist(Vector origin = new Vector())

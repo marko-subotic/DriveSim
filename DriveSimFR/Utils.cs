@@ -73,7 +73,7 @@ namespace DriveSimFR
 
         public static SKRect rectToSK(Rect rect)
         {
-            return new SKRect((float)rect.location.x, (float)rect.location.y, (float)(rect.location.x+rect.size.x), (float)(rect.location.y+rect.size.y));
+            return new SKRect((float)rect.location.x, (float)rect.location.y, (float)(rect.location.x + rect.size.x), (float)(rect.location.y + rect.size.y));
         }
 
         public static double mod2PI(double mod)
@@ -84,6 +84,19 @@ namespace DriveSimFR
             }
             return mod;
         }
+
+        public static Vector rotateVector(double theta, Vector pointOfRotation, Vector pointRotating = new Vector())
+        {
+            double cosT = Math.Cos(theta);
+            double sinT = Math.Sin(theta);
+
+            double xTemp = pointRotating.x - pointOfRotation.x;
+            double yTemp = pointRotating.y - pointOfRotation.y;
+            pointOfRotation.x += (xTemp* cosT) - (yTemp* sinT);
+            pointOfRotation.y += (xTemp* sinT) + (yTemp* cosT);
+
+            return pointOfRotation;
+         }
         /*
          * returns cross product of two vectors
          */

@@ -9,7 +9,6 @@ namespace DriveSimFR
     public class TankChassis : Chassis
     {
         //should be used to position the wheels
-        double radius;
         Vector[] body;
         Vector[] headerLine;
         int strokeWidth;
@@ -40,6 +39,22 @@ namespace DriveSimFR
         public Vector[] getHeaderLine()
         {
             return headerLine;
+        }
+
+        public Vector getLinVelo()
+        {
+            return base.linVelocity;
+        }
+
+        public double getAngVelo()
+        {
+            return base.angVelocity;
+        }
+
+        public void setVelos(Vector linVelo, double angVelo)
+        {
+            base.linVelocity = linVelo;
+            base.angVelocity = angVelo;
         }
     }
 }
