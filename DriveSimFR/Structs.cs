@@ -51,6 +51,11 @@ namespace DriveSimFR
             return new Vector(p1.x * scalar, p1.y * scalar);
         }
 
+        public static Vector operator *(double scalar, Vector p1)
+        {
+            return new Vector(p1.x * scalar, p1.y * scalar);
+        }
+
         public static Vector operator /(Vector p1, double scalar)
         {
             return new Vector(p1.x / scalar, p1.y / scalar);

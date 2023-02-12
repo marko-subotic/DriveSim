@@ -85,7 +85,7 @@ namespace DriveSimFR
             return mod;
         }
 
-        public static Vector rotateVector(double theta, Vector pointOfRotation, Vector pointRotating = new Vector())
+        public static Vector rotateVector(double theta, Vector pointRotating , Vector pointOfRotation  = new Vector())
         {
             double cosT = Math.Cos(theta);
             double sinT = Math.Sin(theta);

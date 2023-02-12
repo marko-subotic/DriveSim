@@ -41,20 +41,8 @@ namespace DriveSimFR
             return headerLine;
         }
 
-        public Vector getLinVelo()
-        {
-            return base.linVelocity;
-        }
+        
 
-        public double getAngVelo()
-        {
-            return base.angVelocity;
-        }
-
-        public void setVelos(Vector linVelo, double angVelo)
-        {
-            base.linVelocity = linVelo;
-            base.angVelocity = angVelo;
-        }
+        
     }
 }

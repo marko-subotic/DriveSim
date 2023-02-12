@@ -146,9 +146,10 @@ public abstract class Chassis
         position.y += linVelocity.y * time + .5 * accel.y * time * time;
         linVelocity.x += accel.x*time;
         linVelocity.y += accel.y*time;
-        header += angVelocity * time + .5 * alpha * time * time;
+        header = Utils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
         angVelocity += alpha * time;
         calcWheelVelos();
+
     }
 
     /*
@@ -160,7 +161,7 @@ public abstract class Chassis
         Vector deltaV = new Vector();
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            Vector adder = getVeloVector(wheelPowers[i] * MAX_SPEED*K_FRIC - wheelVelos[i]*K_FRIC, wheelDirections[i]);
+            Vector adder = getVeloVector((wheelPowers[i]) * MAX_SPEED*K_FRIC - wheelVelos[i]*K_FRIC, wheelDirections[i]);
             deltaV += adder;
 
         }
@@ -213,15 +214,15 @@ public abstract class Chassis
      * Given the state of the chassis (angular and linear velocities), returns the linear speed of each
      * wheel.
      */
-    private void calcWheelVelos()
+    protected void calcWheelVelos()
     {
         for(int i = 0; i<wheelVelos.GetLength(0); i++)
         {
             double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
-            wheelVelos[i] += Math.Sin(angTo) * angVelocity * wheelPositions[i, 2].dist();
+            wheelVelos[i] = Math.Sin(angTo) * angVelocity * wheelPositions[i, 0].dist();
             if (linVelocity.dist() > 0)
             {
-                double linTo = wheelDirections[i] - Utils.angleToVector(linVelocity);
+                double linTo = Utils.mod2PI(wheelDirections[i]+header) - Utils.angleToVector(linVelocity); //Adds heading to wheelDirection to account for fact that linVelocity is in global coordinate system
                 wheelVelos[i] += Math.Cos(linTo) * linVelocity.dist();
 
             }
@@ -259,9 +260,35 @@ public abstract class Chassis
     }
 
     /*
+     * Returns linear velocity; in globabl coordinates.
+     */
+    public Vector getLinVelo()
+    {
+        return linVelocity;
+    }
+
+    /*
+     * Returns angular velocity; positive number is ccw
+     */
+    public double getAngVelo()
+    {
+        return angVelocity;
+    }
+
+    /*
      * Returns array of wheel positions;
      */
     public Vector[,] getWheelPositions() { return wheelPositions; }
+
+    /*
+     * Adjusts state of chassis by the specified velocities.
+     */
+    public void setVelos(Vector linVelo, double angVelo)
+    {
+        linVelocity = linVelo;
+        angVelocity = angVelo;
+        calcWheelVelos();
+    }
 
 
 }
