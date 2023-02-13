@@ -97,6 +97,31 @@ namespace DriveSimFR
 
             return pointOfRotation;
          }
+
+        public static double[] wheelPowsFromJoyStickTank(int l, int r)
+        {
+            return new double[]{ l,-r,-r,l};
+        }
+
+        public static double[] wheelPowsFromJoyStickX(int l, int r, int m)
+        {
+            double[] rtrn = new double[] { l+m, m-r, -m-r, l-m };
+            for (int i = 0; i < rtrn.Length; i++)
+            {
+                if (Math.Abs(rtrn[i]) > 1)
+                {
+                    if (rtrn[i] > 1)
+                    {
+                        rtrn[i] = 1;
+                    }
+                    else
+                    {
+                        rtrn[i] = -1;
+                    }
+                }
+            }
+            return rtrn;
+        }
         /*
          * returns cross product of two vectors
          */

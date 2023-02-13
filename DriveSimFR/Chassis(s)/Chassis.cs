@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
  * Chassis interface holds what any type of 4-wheel drive chassis should have. All calculations
  * are made under presumption that 0 of a heading is Vectoring up on x,y cartesian system.
  * **/
-public abstract class Chassis
+public class Chassis
 {
     protected static readonly int NUM_WHEELS = 4;
     //pixels-per-second
@@ -118,12 +118,10 @@ public abstract class Chassis
 
         for (int i = 0; i<globals.GetLength(0); i++)
         {
-            for(int r = 1; r < wheelPositions.GetLength(1); r++)
+            for(int r = 0; r < wheelPositions.GetLength(1); r++)
             {
-                globals[i, r].x = position.x + (wheelPositions[i, r].x * Math.Cos(-header) - wheelPositions[i, r].y * Math.Sin(-header));
-                globals[i, r].y = position.y + (wheelPositions[i, r].x * Math.Sin(-header) + wheelPositions[i, r].y * Math.Cos(-header));
+                globals[i, r] = chassisToGlobal(wheelPositions[i, r]);
             }
-            globals[i, 0] = Vector.avg(globals[i, 1], globals[i, 2]);
         }
         return globals;
     }
@@ -193,8 +191,8 @@ public abstract class Chassis
     {
         Vector global = new Vector(position);
 
-        global.x += local.x * Math.Cos(-header) -local.y * Math.Sin(-header);
-        global.y += local.x * Math.Sin(-header) + local.y * Math.Cos(-header);
+        global.x += local.x * Math.Cos(header) - local.y * Math.Sin(header);
+        global.y += local.x * Math.Sin(header) + local.y * Math.Cos(header);
         return global;
     }
 
@@ -245,6 +243,14 @@ public abstract class Chassis
     }
 
     /*
+   * Sets heading to the specified angle
+   */
+    public void setPos(Vector pos)
+    {
+        this.position = pos;
+    }
+
+    /*
      * Sets heading to the specified angle
      */
     public void setHeading(double heading)
@@ -290,5 +296,5 @@ public abstract class Chassis
         calcWheelVelos();
     }
 
-
+   
 }

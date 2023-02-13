@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DriveSimFR
 {
-    public struct Vector
+    public struct Vector 
     {
         public double x;
         public double y;
@@ -74,9 +74,13 @@ namespace DriveSimFR
             return this.x.ToString() + ", "+ this.y.ToString();
         }
 
-        public  bool Equals(Vector obj)
+        public override bool Equals(Object obj)
         {
-            return this==obj;
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            return this==(Vector)(obj);
         }
 
         public double dist(Vector origin = new Vector())

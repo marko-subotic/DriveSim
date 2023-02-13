@@ -1,4 +1,5 @@
 using DriveSimFR;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace tests
 {
@@ -165,7 +166,7 @@ namespace tests
         {
             //Given
             //Given
-            double rT = Math.Sqrt(2) / 2*radius;
+            double rT = Math.Sqrt(2)/2*radius;
             double rTP = rT + .5 * rT/radius;
             double rTM = rT - .5 * rT/radius;
             int strokeWidth = 1;
@@ -199,6 +200,80 @@ namespace tests
             for (int i = 0; i < testerHeader.Length; i++)
             {
                 Assert.IsTrue(testerHeader[i] == headerLine[i], "header line: " + headerLine[i] + " " + testerHeader[i]);
+            }
+        }
+
+        [TestMethod]
+        public void getGlobalPoint_Q1()
+        {
+            //given
+            Vector pos = new Vector(radius, radius);
+            XChassis tester = new XChassis(radius, pos, 1, radius);
+            Vector[] wheelPos = new Vector[] { new Vector(pos.x-radius, pos.y), new Vector(pos.x, pos.y+radius), new Vector(pos.x + radius, pos.y), new Vector(pos.x, pos.y-radius), };
+            tester.setHeading(Math.PI / 4);
+            tester.setPos(pos);
+            Vector[,] testerPos = tester.getGlobalWheelPositions();
+
+            //then
+            for (int i = 0; i < num_wheels; i++)
+            {
+                Assert.AreEqual(testerPos[i, 0], wheelPos[i], i.ToString());
+            }
+
+        }
+
+        [TestMethod]
+        public void getGlobalPoint_Q2()
+        {
+            //given
+            Vector pos = new Vector(-radius, radius);
+            XChassis tester = new XChassis(radius, pos, 1, radius);
+            Vector[] wheelPos = new Vector[] { new Vector(pos.x - radius, pos.y), new Vector(pos.x, pos.y + radius), new Vector(pos.x + radius, pos.y), new Vector(pos.x, pos.y - radius), };
+            tester.setHeading(Math.PI / 4);
+            tester.setPos(pos);
+            Vector[,] testerPos = tester.getGlobalWheelPositions();
+
+            //then
+            for (int i = 0; i < num_wheels; i++)
+            {
+                Assert.AreEqual(testerPos[i, 0], wheelPos[i], i.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void getGlobalPoint_Q3()
+        {
+            //given
+            Vector pos = new Vector(-radius);
+            XChassis tester = new XChassis(radius, pos, 1, radius);
+            Vector[] wheelPos = new Vector[] { new Vector(pos.x, pos.y - radius), new Vector(pos.x - radius, pos.y), new Vector(pos.x, pos.y + radius), new Vector(pos.x + radius, pos.y), };
+            tester.setHeading(3 * Math.PI / 4);
+            tester.setPos(pos);
+            Vector[,] testerPos = tester.getGlobalWheelPositions();
+
+            //then
+            for (int i = 0; i < num_wheels; i++)
+            {
+                Assert.AreEqual(testerPos[i, 0], wheelPos[i], i.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void getGlobalPoint_Q4()
+        {
+            //given
+            double rT = Math.Sqrt(2) / 2 * radius;
+            Vector pos = new Vector(radius, -radius);
+            XChassis tester = new XChassis(radius, pos, 1, radius);
+            Vector[] wheelPos = new Vector[] { new Vector(pos.x+radius, pos.y), new Vector(pos.x, pos.y-radius), new Vector(pos.x-radius, pos.y), new Vector(pos.x, pos.y+radius), };
+            tester.setHeading(5 * Math.PI / 4);
+            tester.setPos(pos);
+            Vector[,] testerPos = tester.getGlobalWheelPositions();
+
+            //then
+            for (int i = 0; i < num_wheels; i++)
+            {
+                Assert.AreEqual(testerPos[i, 0], wheelPos[i], i.ToString());
             }
         }
     }
