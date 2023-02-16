@@ -1,18 +1,15 @@
-﻿using SkiaSharp;
-using System.Windows.Forms;
-
-namespace DriveSimFR
+﻿namespace DriveSim
 {
-    partial class Form1
+    partial class ChassisSim
     {
         /// <summary>
-        ///  Required designer variable.
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
         public static readonly int width = 2000;
         public static readonly int height = 1333;
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
@@ -27,8 +24,8 @@ namespace DriveSimFR
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
@@ -44,7 +41,7 @@ namespace DriveSimFR
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-            this.KeyUp += this.pictureBox1_KeyUp;
+            this.KeyUp += this.KeyUpMethod;
             // 
             // Form1
             // 
@@ -56,12 +53,10 @@ namespace DriveSimFR
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
-            
-
         }
 
         #endregion
-
         private PictureBox pictureBox1;
+
     }
 }

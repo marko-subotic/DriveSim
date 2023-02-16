@@ -1,3 +1,5 @@
+using DriveSim;
+
 namespace DriveSimFR
 {
     internal static class Program
@@ -11,8 +13,9 @@ namespace DriveSimFR
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-
-            Application.Run(new Form1());
+            
+            //change to select what mode, electric fields or drivesim
+            Application.Run(new ChassisSim());
         }
     }
 }

@@ -9,7 +9,9 @@ namespace DriveSimFR
     public class XChassis : Chassis
     {
         Vector[] body;
+        Vector[] bodyGlob;
         Vector[] headerLine;
+        Vector[] headerLineGlob;
         int strokeWidth;
         public XChassis(double radius, Vector position, int strokeWidth, double WHEEL_PROP, int max_speed = 1, double k_fric = .2, double mass = 1) : base(radius, null, null, position, WHEEL_PROP, max_speed, k_fric, mass)
         {
@@ -26,18 +28,32 @@ namespace DriveSimFR
                 body[i] += wheelPositions[i] + new Vector((wheelPositions[i].x < 0 ? strokeWidth : -strokeWidth), 0);
             }
             headerLine = new Vector[2] { new Vector(), new Vector(0, radius) };
+            headerLineGlob = new Vector[headerLine.Length];
+            bodyGlob = new Vector[body.Length];
         }
 
-        //Returns the array holding the points of the body
-        public Vector[] getBody()
+        /*
+         * Returns line on chassis pointing in direction of heading
+         */
+        public override Vector[] getHeaderLine()
         {
-            return body;
+            for (int i = 0; i < headerLine.Length; i++)
+            {
+                headerLineGlob[i] = base.chassisToGlobal(headerLine[i]);
+            }
+            return headerLineGlob;
         }
 
-        //Return the array of the header line
-        public Vector[] getHeaderLine()
+        /*
+         * Returns the array holding the points of the body
+         */
+        public override Vector[] getBody()
         {
-            return headerLine;
+            for (int i = 0; i < body.Length; i++)
+            {
+                bodyGlob[i] = base.chassisToGlobal(body[i]);
+            }
+            return bodyGlob;
         }
 
     }

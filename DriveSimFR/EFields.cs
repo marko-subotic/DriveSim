@@ -8,20 +8,20 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DriveSimFR
 {
-    public partial class Form1 : Form
+    public partial class EFields : Form
     {
         StaticElectricField field;
         SKSurface surface;
         SKCanvas canvas;
         StaticChargeCanvas canvas_board;
-        public Form1()
+        public EFields()
         {
-            field = new StaticElectricField(Form1.width, Form1.height,Form1.width/30,Form1.height/30, 30);
-            SKImageInfo imageInfo = new SKImageInfo(Form1.width, Form1.height);
+            field = new StaticElectricField(EFields.width, EFields.height,EFields.width/30,EFields.height/30, 30);
+            SKImageInfo imageInfo = new SKImageInfo(EFields.width, EFields.height);
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
             InitializeComponent();
-            canvas_board = new StaticChargeCanvas(ref canvas, new Point(Form1.width, Form1.height));
+            canvas_board = new StaticChargeCanvas(ref canvas, new Point(EFields.width, EFields.height));
             using (SKImage image = surface.Snapshot())
             using (SKData data = image.Encode(SKEncodedImageFormat.Png, 100))
             using (MemoryStream mStream = new MemoryStream(data.ToArray()))

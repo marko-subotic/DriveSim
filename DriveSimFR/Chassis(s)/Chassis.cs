@@ -1,13 +1,13 @@
 using DriveSimFR;
 using System.Runtime.CompilerServices;
-
+using System.Threading;
 [assembly: InternalsVisibleTo("SimTests")]
 
 /*
  * Chassis interface holds what any type of 4-wheel drive chassis should have. All calculations
  * are made under presumption that 0 of a heading is Vectoring up on x,y cartesian system.
  * **/
-public class Chassis
+public abstract class Chassis
 {
     protected static readonly int NUM_WHEELS = 4;
     //pixels-per-second
@@ -31,6 +31,8 @@ public class Chassis
     protected double header;
     protected Vector linVelocity;
     protected double angVelocity;
+
+    private Mutex mut;
     
 
     public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric = .2, double mass = 1)
@@ -47,6 +49,7 @@ public class Chassis
         MAX_SPEED = max_speed;
         K_FRIC = k_fric;
         MASS= mass;
+        mut = new Mutex();
         if (wheelDirections != null)
         {
             for (int i = 0; i < wheelDirections.GetLength(0); i++)
@@ -140,13 +143,21 @@ public class Chassis
         }
         Vector accel = Utils.rotateVector(header,getNetAccel());
         double alpha = getNetAlpha();
-        position.x += linVelocity.x * time + .5 * accel.x * time * time;
-        position.y += linVelocity.y * time + .5 * accel.y * time * time;
-        linVelocity.x += accel.x*time;
-        linVelocity.y += accel.y*time;
-        header = Utils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
-        angVelocity += alpha * time;
-        calcWheelVelos();
+        using (mut)
+        {
+            //mut = new Mutex();
+            //mut.WaitOne();
+            position.x += linVelocity.x * time + .5 * accel.x * time * time;
+            position.y += linVelocity.y * time + .5 * accel.y * time * time;
+            linVelocity.x += accel.x * time;
+            linVelocity.y += accel.y * time;
+            header = Utils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
+            angVelocity += alpha * time;
+            calcWheelVelos();
+            //mut.ReleaseMutex();
+
+        }
+        
 
     }
 
@@ -296,5 +307,16 @@ public class Chassis
         calcWheelVelos();
     }
 
-   
+    /*
+     * Returns line on chassis pointing in direction of heading
+     */
+    public abstract Vector[] getHeaderLine();
+
+    /*
+     * Returns the array holding the points of the body
+     */
+    public abstract Vector[] getBody();
+
+
+
 }

@@ -9,6 +9,9 @@ namespace DriveSimFR
 {
     public class Utils
     {
+        private static readonly double JOYSTICK_MAX = 65540/2;
+        private static readonly double JOYSTICK_DEADZONE = .15;
+
         /*
      * Similar to atan2 function, but returns an angle according to theta = 0
      * meaning the Vector is directly above the origin and positive direction of theta being ccw.
@@ -98,16 +101,21 @@ namespace DriveSimFR
             return pointOfRotation;
          }
 
-        public static double[] wheelPowsFromJoyStickTank(int l, int r)
+        public static double[] wheelPowsFromJoyStickTank(int r, int l)
         {
-            return new double[]{ l,-r,-r,l};
+            return new double[]{ l/ JOYSTICK_MAX, r/ JOYSTICK_MAX, r/ JOYSTICK_MAX, l/ JOYSTICK_MAX };
         }
 
-        public static double[] wheelPowsFromJoyStickX(int l, int r, int m)
+        public static double[] wheelPowsFromJoyStickX(int r, int l, int m)
         {
-            double[] rtrn = new double[] { l+m, m-r, -m-r, l-m };
+            m *= -1;
+            double[] rtrn = new double[] { (l+m)/ JOYSTICK_MAX, (m-r)/ JOYSTICK_MAX, (-m-r)/ JOYSTICK_MAX, (l-m)/ JOYSTICK_MAX };
             for (int i = 0; i < rtrn.Length; i++)
             {
+                if (Math.Abs(rtrn[i]) < JOYSTICK_DEADZONE)
+                {
+                    rtrn[i] = 0;
+                }
                 if (Math.Abs(rtrn[i]) > 1)
                 {
                     if (rtrn[i] > 1)
