@@ -12,10 +12,11 @@ public abstract class Chassis
     protected static readonly int NUM_WHEELS = 4;
     //pixels-per-second
     public readonly double MAX_SPEED;
-    public static readonly double K_ROT = 1;
+    public static readonly double K_ROT = 10;
     protected readonly double wheelLength;
     protected readonly double WHEEL_PROP;
-    protected readonly double K_FRIC;
+    protected readonly double K_FRIC_FOR;
+    protected readonly double K_FRIC_LAT;
     protected readonly double LOW_CUTOFF = 0.1;
     protected readonly double MASS;
     // in radians, 0 is straight up
@@ -23,21 +24,22 @@ public abstract class Chassis
     //will have each wheel correspond with the index in wheelDirection. position will be from center:
     //center of chassis will be origin of local coordinate system housing wheel positions.
     protected Vector[,] wheelPositions;
-    
+    Vector[,] globals;
     //index of each wheel corresponds to wheel direction&wheelPositions
-    protected double[] wheelVelos;
+    protected double[,] wheelVelos;
     protected double[] wheelPowers;
     protected Vector position;
     protected double header;
     protected Vector linVelocity;
     protected double angVelocity;
+    protected Vector deltaA;
 
     private Mutex mut;
     
 
-    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric = .2, double mass = 1)
+    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric_for = .2, double k_fric_lat = .2, double mass = 1)
     {
-        wheelVelos= new double[NUM_WHEELS];
+        wheelVelos= new double[NUM_WHEELS,2];
         wheelPowers = new double[NUM_WHEELS];
         this.position = position;
         header = 0;
@@ -47,9 +49,13 @@ public abstract class Chassis
         linVelocity = new Vector();
         angVelocity = 0;
         MAX_SPEED = max_speed;
-        K_FRIC = k_fric;
-        MASS= mass;
+        K_FRIC_FOR = k_fric_for;
+        K_FRIC_LAT = k_fric_lat;
+
+        MASS = mass;
         mut = new Mutex();
+        globals = new Vector[NUM_WHEELS, 3];
+        deltaA = new Vector();
         if (wheelDirections != null)
         {
             for (int i = 0; i < wheelDirections.GetLength(0); i++)
@@ -73,7 +79,7 @@ public abstract class Chassis
      */
     protected void constructor(double[] wheelDirections, Vector[] wheelPositions, Vector position)
     {
-        wheelVelos = new double[NUM_WHEELS];
+        wheelVelos = new double[NUM_WHEELS,2];
         wheelPowers = new double[NUM_WHEELS];
         this.position = position;
         header = 0;
@@ -117,8 +123,6 @@ public abstract class Chassis
      */
     public Vector[,] getGlobalWheelPositions()
     {
-        Vector[,] globals = new Vector[NUM_WHEELS, 3];
-
         for (int i = 0; i<globals.GetLength(0); i++)
         {
             for(int r = 0; r < wheelPositions.GetLength(1); r++)
@@ -145,8 +149,8 @@ public abstract class Chassis
         double alpha = getNetAlpha();
         using (mut)
         {
-            //mut = new Mutex();
-            //mut.WaitOne();
+            mut = new Mutex();
+            mut.WaitOne();
             position.x += linVelocity.x * time + .5 * accel.x * time * time;
             position.y += linVelocity.y * time + .5 * accel.y * time * time;
             linVelocity.x += accel.x * time;
@@ -154,7 +158,7 @@ public abstract class Chassis
             header = Utils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
             angVelocity += alpha * time;
             calcWheelVelos();
-            //mut.ReleaseMutex();
+            mut.ReleaseMutex();
 
         }
         
@@ -167,14 +171,14 @@ public abstract class Chassis
      */
     public Vector getNetAccel()
     {
-        Vector deltaV = new Vector();
+        deltaA.x = 0;
+        deltaA.y = 0;
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            Vector adder = getVeloVector((wheelPowers[i]) * MAX_SPEED*K_FRIC - wheelVelos[i]*K_FRIC, wheelDirections[i]);
-            deltaV += adder;
-
+            deltaA += getVeloVector((wheelPowers[i]) * MAX_SPEED * K_FRIC_FOR - wheelVelos[i, 0] * K_FRIC_FOR, wheelDirections[i]); ;
+            deltaA += getVeloVector(-wheelVelos[i, 1] * K_FRIC_LAT, wheelDirections[i]-Math.PI/2); ;
         }
-        return deltaV/MASS;
+        return deltaA/MASS;
     }
 
     /*
@@ -184,11 +188,15 @@ public abstract class Chassis
     public double getNetAlpha()
     {
         double deltaO = 0;
-        for (int i = 0; i < wheelVelos.GetLength(0); i++)
+        for (int i = 0; i < wheelVelos.GetLength(0)&&wheelPositions[i,0].dist()!=0; i++) 
         {
-            double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
-            deltaO += (wheelPowers[i] * MAX_SPEED * K_FRIC - wheelVelos[i] * K_FRIC)* Math.Sin(angTo) / wheelPositions[i, 0].dist()*K_ROT/MASS;
-        }
+            if(wheelPositions[i, 0].dist() != 0)
+            {
+                double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
+                deltaO += (wheelPowers[i] * MAX_SPEED * K_FRIC_FOR - wheelVelos[i, 0] * K_FRIC_FOR) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+                deltaO += (wheelVelos[i, 1] * K_FRIC_LAT) * Math.Cos(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+            }
+        }   
         return deltaO;
     }
     /*
@@ -228,11 +236,13 @@ public abstract class Chassis
         for(int i = 0; i<wheelVelos.GetLength(0); i++)
         {
             double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
-            wheelVelos[i] = Math.Sin(angTo) * angVelocity * wheelPositions[i, 0].dist();
+            wheelVelos[i,0] = Math.Sin(angTo) * angVelocity * wheelPositions[i, 0].dist();
+            wheelVelos[i, 1] = Math.Cos(angTo) * -angVelocity * wheelPositions[i, 0].dist(); //ccw is positive angle velocity, to the right of the wheel should be positive direction of omni-wheel spin
             if (linVelocity.dist() > 0)
             {
                 double linTo = Utils.mod2PI(wheelDirections[i]+header) - Utils.angleToVector(linVelocity); //Adds heading to wheelDirection to account for fact that linVelocity is in global coordinate system
-                wheelVelos[i] += Math.Cos(linTo) * linVelocity.dist();
+                wheelVelos[i,0] += Math.Cos(linTo) * linVelocity.dist();
+                wheelVelos[i,1] += Math.Sin(linTo) * linVelocity.dist();
 
             }
         }
@@ -271,7 +281,7 @@ public abstract class Chassis
     /*
      * Returns array of wheel velocities;
      */
-    public double[] getWheelVelos()
+    public double[,] getWheelVelos()
     {
         return wheelVelos;
     }

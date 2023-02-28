@@ -10,7 +10,7 @@ namespace DriveSimFR
     public class Utils
     {
         private static readonly double JOYSTICK_MAX = 65540/2;
-        private static readonly double JOYSTICK_DEADZONE = .15;
+        private static readonly double JOYSTICK_DEADZONE = .4;
 
         /*
      * Similar to atan2 function, but returns an angle according to theta = 0

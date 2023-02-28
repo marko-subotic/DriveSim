@@ -22,6 +22,7 @@ namespace DriveSim
     {
         SKSurface surface;
         SKCanvas canvas;
+        SKPaint paint;
         enum state
         {
             intro,
@@ -53,6 +54,7 @@ namespace DriveSim
             InitializeComponent();
             TankDriveButton = new MyButton(DrawingUtils.alignCenter(dimensions.X / 4, dimensions.Y / 2, dimensions.X / 3, dimensions.Y / 10), "Tank Drive");
             XDriveButton = new MyButton(DrawingUtils.alignCenter(3 * dimensions.X / 4, dimensions.Y / 2, dimensions.X / 3, dimensions.Y / 10), "X-Drive");
+            paint = new SKPaint();
             drawCanvas();
 
             controller = new Controller(UserIndex.One);
@@ -74,13 +76,13 @@ namespace DriveSim
                     {
                         canvasState = state.driving;
                         drivingMethod = method.tank;
-                        chassis = new TankChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0,100);
+                        chassis = new TankChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0, 100, .8, .2);
                     }
                     else if (XDriveButton.rectangle.contains(mousePos))
                     {
                         canvasState = state.driving;
                         drivingMethod = method.x;
-                        chassis = new XChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0,100, .8, .2);
+                        chassis = new XChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0,200, .5, .2);
                     }
                     drawCanvas();
                     break;
@@ -138,7 +140,6 @@ namespace DriveSim
             while (canvasState == state.driving)
             {
                 canvas.Clear(SKColors.Black);
-                using (SKPaint paint = new SKPaint())
                 {       
                     paint.Color = SKColors.Blue;
                     paint.IsAntialias = true;
@@ -173,7 +174,7 @@ namespace DriveSim
                     chassis.inputWheelPowers(Utils.wheelPowsFromJoyStickX(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY, controller.GetState().Gamepad.LeftThumbX));
                 }
                 sendFrame();
-                Thread.Sleep(16);
+                Thread.Sleep(8);
 
             }
 

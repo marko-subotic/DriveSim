@@ -14,7 +14,7 @@ namespace DriveSimFR
         Vector[] bodyGlob;
         Vector[] headerLineGlob;
         int strokeWidth;
-        public TankChassis(double radius, Vector position, int strokeWidth, double WHEEL_PROP, int max_speed = 1, double k_fric = .2, double mass = 1) : base(radius, null, null, position,WHEEL_PROP, max_speed, k_fric, mass)
+        public TankChassis(double radius, Vector position, int strokeWidth, double WHEEL_PROP, int max_speed = 1, double k_fric_for = .2, double k_fric_lat = .2, double mass = 1) : base(radius, null, null, position,WHEEL_PROP, max_speed, k_fric_for, k_fric_lat, mass)
         {
             double rT = Math.Sqrt(2) / 2 * radius;
             double[] wheelDirections = new double[Chassis.NUM_WHEELS];
