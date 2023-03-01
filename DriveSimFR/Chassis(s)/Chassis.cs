@@ -15,7 +15,6 @@ public abstract class Chassis
     public static readonly double K_ROT = 10;
     protected readonly double wheelLength;
     protected readonly double WHEEL_PROP;
-    protected readonly double K_FRIC_FOR;
     protected readonly double K_FRIC_LAT;
     protected readonly double LOW_CUTOFF = 0.1;
     protected readonly double MASS;
@@ -37,7 +36,7 @@ public abstract class Chassis
     private Mutex mut;
     
 
-    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric_for = .2, double k_fric_lat = .2, double mass = 1)
+    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric_lat = .2, double mass = 1)
     {
         wheelVelos= new double[NUM_WHEELS,2];
         wheelPowers = new double[NUM_WHEELS];
@@ -49,7 +48,6 @@ public abstract class Chassis
         linVelocity = new Vector();
         angVelocity = 0;
         MAX_SPEED = max_speed;
-        K_FRIC_FOR = k_fric_for;
         K_FRIC_LAT = k_fric_lat;
 
         MASS = mass;
@@ -175,8 +173,8 @@ public abstract class Chassis
         deltaA.y = 0;
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            deltaA += getVeloVector((wheelPowers[i]) * MAX_SPEED * K_FRIC_FOR - wheelVelos[i, 0] * K_FRIC_FOR, wheelDirections[i]); ;
-            deltaA += getVeloVector(-wheelVelos[i, 1] * K_FRIC_LAT, wheelDirections[i]-Math.PI/2); ;
+            deltaA += getVeloVector((wheelPowers[i]) * -Math.Pow(wheelVelos[i, 0],2) / Math.Pow(MAX_SPEED, 2), wheelDirections[i]); ;
+            deltaA += getVeloVector(-Math.Pow(wheelVelos[i, 1],2) * K_FRIC_LAT, wheelDirections[i]-Math.PI/2); ;
         }
         return deltaA/MASS;
     }
@@ -193,7 +191,7 @@ public abstract class Chassis
             if(wheelPositions[i, 0].dist() != 0)
             {
                 double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
-                deltaO += (wheelPowers[i] * MAX_SPEED * K_FRIC_FOR - wheelVelos[i, 0] * K_FRIC_FOR) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+                deltaO += (wheelPowers[i] * MAX_SPEED - wheelVelos[i, 0]) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
                 deltaO += (wheelVelos[i, 1] * K_FRIC_LAT) * Math.Cos(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
             }
         }   

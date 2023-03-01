@@ -10,7 +10,6 @@ namespace tests
         Vector position = new Vector();
         int radius = 5;
         int max_speed = 10;
-        double k_fric = .2;
         double k_lat = .2;
         double mass = 1;
         double maxError = .0001;
@@ -32,8 +31,8 @@ namespace tests
         {
             //Given
             double step_size = 2;
-            double K = max_speed * k_fric / mass;
-            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, k_lat, mass);
+            double K = 1/mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
             double[] wheelPows = new double[] { 1, 1, 1, 1 };
             Vector expectedLinVelo = new Vector(0, num_wheels*K*wheelPows[0]*step_size);
             double expectedAngVelo = 0;
@@ -67,18 +66,18 @@ namespace tests
             //Given
             double rT = Math.Sqrt(2) / 2;
             double step_size = 2;
-            double K = max_speed * k_fric / mass*rT;
-            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, k_lat, mass);
+            double K = 1 / mass*rT;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
             double[] wheelPows = new double[] { 1, -1, -1, 1 };
             Vector expectedLinVelo = new Vector();
             double expectedAngVelo = -num_wheels*K*wheelPows[0]*Math.Pow(step_size,1)/radius;
             Vector expectedPos = new Vector();
             double expectedHead = Utils.mod2PI(-(.5 * K * wheelPows[0]/radius*Math.Pow(step_size,2)*num_wheels));
             double wlSpd = expectedAngVelo * -rT*radius;
-            double[,] expectedWheelVelos = new double[,] {{ wlSpd, wlSpd, wlSpd, wlSpd },
+            double[,] expectedWheelVelos = new double[,] {{ wlSpd, -wlSpd, -wlSpd, wlSpd },
                                                            { wlSpd, wlSpd, -wlSpd, -wlSpd } };
-        //when
-        tester.inputWheelPowers(wheelPows);
+            //when
+            tester.inputWheelPowers(wheelPows);
             tester.step(step_size);
 
             //then
@@ -101,8 +100,8 @@ namespace tests
             //Given
             double rT = Math.Sqrt(2) / 2;
             double step_size = 1;
-            double K = max_speed * k_fric / mass;
-            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_fric, k_lat, mass);
+            double K = 1 / mass;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
             tester.setHeading(Math.PI * 7 / 4);
             double[] wheelPows = new double[] { 1, 1, 1, 1 };
             double expectedHead = Math.PI * 7 / 4;
@@ -138,18 +137,56 @@ namespace tests
             //Given
             double rT = Math.Sqrt(2) / 2;
             double step_size = 1;
-            double K = max_speed * k_fric / mass;
-            XChassis tester = new XChassis(radius, position, strokeWidth, radius, max_speed, k_fric, k_lat, mass);
+            XChassis tester = new XChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
             tester.setHeading(Math.PI * 7 / 4);
             double[] wheelPows = new double[] { 1, -1, -1, 1 };
             double expectedHead = Math.PI * 7 / 4;
+            double spd = Math.Sqrt(Math.Pow(max_speed, 2)/(1+ k_lat));
             Vector expectedLinVelo = (1 / rT * max_speed) * Utils.unitVectorFromTheta(expectedHead);
             double expectedAngVelo = 0;
             tester.setVelos(expectedLinVelo, expectedAngVelo);
-            Vector expectedPos = (1/rT * max_speed)*Utils.unitVectorFromTheta(expectedHead);
-            double wlSpd = max_speed;
+            Vector expectedPos = (1/rT * spd)*Utils.unitVectorFromTheta(expectedHead);
+            double wlSpd = spd;
+            double[,] expectedWheelVelos = new double[,] {{ wlSpd, -wlSpd, -wlSpd, wlSpd },
+                                                           { -wlSpd, -wlSpd, wlSpd, wlSpd } };
+
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
+
+            //then
+            Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
+            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            Assert.AreEqual(tester.getPos(), expectedPos);
+            AssertDouble(tester.getHeading(), expectedHead);
+            for (int i = 0; i < num_wheels; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestTankStep_HalfMaxVeloStraight()
+        {
+            //Given
+            double rT = Math.Sqrt(2) / 2;
+            double step_size = 1;
+            double accel = num_wheels / mass * (1 - Math.Pow(max_speed / 2, 2) / Math.Pow(max_speed, 2));
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
+            tester.setHeading(0);
+            double[] wheelPows = new double[] { 1, 1, 1, 1 };
+            double expectedHead = 0;
+            double spd = Math.Sqrt(Math.Pow(max_speed, 2) / (1 + k_lat));
+            Vector expectedLinVelo = (max_speed/2+accel*step_size) * Utils.unitVectorFromTheta(expectedHead);
+            double expectedAngVelo = 0;
+            tester.setVelos(expectedLinVelo, expectedAngVelo);
+            Vector expectedPos = (expectedLinVelo.dist()*step_size+.5*accel*Math.Pow(step_size,2)) * Utils.unitVectorFromTheta(expectedHead);
+            double wlSpd = spd;
             double[,] expectedWheelVelos = new double[,] {{ wlSpd, wlSpd, wlSpd, wlSpd },
-                                                           { wlSpd, wlSpd, wlSpd, wlSpd } };
+                                                           { 0, 0, 0, 0 } };
 
             //when
             tester.inputWheelPowers(wheelPows);
