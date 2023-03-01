@@ -12,7 +12,7 @@ public abstract class Chassis
     protected static readonly int NUM_WHEELS = 4;
     //pixels-per-second
     public readonly double MAX_SPEED;
-    public static readonly double K_ROT = 10;
+    public readonly double K_ROT;
     protected readonly double wheelLength;
     protected readonly double WHEEL_PROP;
     protected readonly double K_FRIC_LAT;
@@ -36,7 +36,7 @@ public abstract class Chassis
     private Mutex mut;
     
 
-    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric_lat = .2, double mass = 1)
+    public Chassis(double radius, double[] wheelDirections, Vector[] wheelPositions, Vector position, double WHEELS_PROP, int max_speed = 1, double k_fric_lat = .2, double mass = 1, double k_rot =1)
     {
         wheelVelos= new double[NUM_WHEELS,2];
         wheelPowers = new double[NUM_WHEELS];
@@ -49,7 +49,7 @@ public abstract class Chassis
         angVelocity = 0;
         MAX_SPEED = max_speed;
         K_FRIC_LAT = k_fric_lat;
-
+        K_ROT = k_rot;
         MASS = mass;
         mut = new Mutex();
         globals = new Vector[NUM_WHEELS, 3];
@@ -173,8 +173,8 @@ public abstract class Chassis
         deltaA.y = 0;
         for(int i = 0; i < wheelVelos.GetLength(0);i++) 
         {
-            deltaA += getVeloVector((wheelPowers[i]) * -Math.Pow(wheelVelos[i, 0],2) / Math.Pow(MAX_SPEED, 2), wheelDirections[i]); ;
-            deltaA += getVeloVector(-Math.Pow(wheelVelos[i, 1],2) * K_FRIC_LAT, wheelDirections[i]-Math.PI/2); ;
+            deltaA += getVeloVector((wheelPowers[i])  - Math.Pow(wheelVelos[i, 0], 2) * (wheelVelos[i, 0] > 0 ? 1 : -1) / Math.Pow(MAX_SPEED, 2), wheelDirections[i]);
+            deltaA += getVeloVector(-Math.Pow(wheelVelos[i, 1], 2) * (wheelVelos[i, 1] > 0 ? 1 : -1) * K_FRIC_LAT, wheelDirections[i]-Math.PI/2);                                                                                                                                                                                                                                                                                           ;
         }
         return deltaA/MASS;
     }
@@ -191,8 +191,8 @@ public abstract class Chassis
             if(wheelPositions[i, 0].dist() != 0)
             {
                 double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
-                deltaO += (wheelPowers[i] * MAX_SPEED - wheelVelos[i, 0]) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
-                deltaO += (wheelVelos[i, 1] * K_FRIC_LAT) * Math.Cos(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+                deltaO += (wheelPowers[i] - Math.Pow(wheelVelos[i, 0], 2) * (wheelVelos[i,0]>0 ? 1:-1)/ Math.Pow(MAX_SPEED, 2)) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+                deltaO += (-Math.Pow(wheelVelos[i, 1], 2) * (wheelVelos[i, 1] > 0 ? 1 : -1) * K_FRIC_LAT) * Math.Cos(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
             }
         }   
         return deltaO;
