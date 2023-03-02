@@ -103,7 +103,15 @@ namespace DriveSimFR
 
         public static double[] wheelPowsFromJoyStickTank(int r, int l)
         {
-            return new double[]{ l/ JOYSTICK_MAX, r/ JOYSTICK_MAX, r/ JOYSTICK_MAX, l/ JOYSTICK_MAX };
+            double[] rtrn = new double[]{ l/ JOYSTICK_MAX, r/ JOYSTICK_MAX, r/ JOYSTICK_MAX, l/ JOYSTICK_MAX };
+            for(int i = 0; i< rtrn.Length; i++)
+            {
+                if (Math.Abs(rtrn[i]) < JOYSTICK_DEADZONE)
+                {
+                    rtrn[i] = 0;
+                }
+            }
+            return rtrn;
         }
 
         public static double[] wheelPowsFromJoyStickX(int r, int l, int m)

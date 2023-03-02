@@ -76,13 +76,13 @@ namespace DriveSim
                     {
                         canvasState = state.driving;
                         drivingMethod = method.tank;
-                        chassis = new TankChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0, 100, .8, .2);
+                        chassis = new TankChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0, 300, .00005, .002, 5);
                     }
                     else if (XDriveButton.rectangle.contains(mousePos))
                     {
                         canvasState = state.driving;
                         drivingMethod = method.x;
-                        chassis = new XChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0,200, .5, .2);
+                        chassis = new XChassis(radius, new Vector(width/2, height/2), strokewidth, 4.0,200, .0001, .005, 1);
                     }
                     drawCanvas();
                     break;

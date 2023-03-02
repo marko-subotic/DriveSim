@@ -200,5 +200,40 @@ namespace tests
                 }
             }
         }
+
+        [TestMethod]
+        public void TestTankStep_MaxSpinningVeloNoInput()
+        {
+            //Given
+            double rT = Math.Sqrt(2) / 2;
+            double step_size = 1;
+            TankChassis tester = new TankChassis(radius, position, strokeWidth, radius, max_speed, k_lat, mass);
+            tester.setHeading(0);
+            double[] wheelPows = new double[] { 1, -1, -1, 1 };
+            double spd = Math.Sqrt(Math.Pow(max_speed, 2) / (1 + k_lat * Math.Pow(max_speed, 2)));
+            double expectedHead = Utils.mod2PI(-spd /radius/rT*step_size); //divide by sqrt2/2 to ensure that wheelspeed is spd
+            double expectedAngVelo = -spd /rT/radius;
+            tester.setVelos(new Vector(), expectedAngVelo);
+            Vector expectedLinVelo = new Vector();
+            Vector expectedPos = new Vector();
+            double[,] expectedWheelVelos = new double[,] { { spd, spd }, { -spd,spd }, { -spd, -spd }, { spd, -spd } };
+
+            //when
+            tester.inputWheelPowers(wheelPows);
+            tester.step(step_size);
+
+            //then
+            Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
+            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            Assert.AreEqual(tester.getPos(), expectedPos);
+            AssertDouble(tester.getHeading(), expectedHead);
+            for (int i = 0; i < num_wheels; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                }
+            }
+        }
     }
 }

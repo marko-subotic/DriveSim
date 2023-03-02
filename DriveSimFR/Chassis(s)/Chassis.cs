@@ -192,7 +192,7 @@ public abstract class Chassis
             {
                 double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
                 deltaO += (wheelPowers[i] - Math.Pow(wheelVelos[i, 0], 2) * (wheelVelos[i,0]>0 ? 1:-1)/ Math.Pow(MAX_SPEED, 2)) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
-                deltaO += (-Math.Pow(wheelVelos[i, 1], 2) * (wheelVelos[i, 1] > 0 ? 1 : -1) * K_FRIC_LAT) * Math.Cos(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
+                deltaO += (-Math.Pow(wheelVelos[i, 1], 2) * (wheelVelos[i, 1] > 0 ? 1 : -1) * K_FRIC_LAT) * Math.Sin(angTo-Math.PI/2) / wheelPositions[i, 0].dist() * K_ROT / MASS;
             }
         }   
         return deltaO;
