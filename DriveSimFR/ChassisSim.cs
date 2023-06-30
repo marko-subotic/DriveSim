@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Timers;
-
+using DriveSim.Utils;
 
 namespace DriveSim
 {
@@ -137,44 +137,33 @@ namespace DriveSim
 
         public void drawDrivingCanvas()
         {
+            
             while (canvasState == state.driving)
             {
                 canvas.Clear(SKColors.Black);
-                {       
-                    paint.Color = SKColors.Blue;
-                    paint.IsAntialias = true;
-                    paint.StrokeWidth = strokewidth;
-                    paint.Style = SKPaintStyle.Stroke;
-                    Vector[,] wheelPos = chassis.getGlobalWheelPositions();
-                    Vector[] body = chassis.getBody();
-                    Vector[] headerLine = chassis.getHeaderLine();
-
-                    for (int i = 0; i < body.Length;i++)
-                    {
-                        canvas.DrawLine(Utils.vecToPt(body[i]), Utils.vecToPt(body[(i+1)%(body.Length)]), paint);
-                    }
-                    paint.Color = SKColors.White;
-                    for (int i = 0; i < wheelPos.GetLength(0); i++)
-                    {
-                        for(int j = 0; j < wheelPos.GetLength(1); j++)
-                        {
-                            canvas.DrawLine(Utils.vecToPt(wheelPos[i,j]), Utils.vecToPt(wheelPos[i,(j+1) % (wheelPos.GetLength(1))]), paint);
-                        }
-                    }
-                    paint.Color = SKColors.Red;
-                    canvas.DrawLine(Utils.vecToPt(headerLine[0]), Utils.vecToPt(headerLine[1]), paint);
-
-                }
-                if (method.tank == drivingMethod)
+                paint.Color = SKColors.Blue;
+                paint.IsAntialias = true;
+                paint.StrokeWidth = strokewidth;
+                paint.Style = SKPaintStyle.Stroke;
+                Vector[,] wheelPos = chassis.getGlobalWheelPositions();
+                Vector[] body = chassis.getBody();
+                Vector[] headerLine = chassis.getHeaderLine();
+                for (int i = 0; i < body.Length;i++)
                 {
-                    chassis.inputWheelPowers(Utils.wheelPowsFromJoyStickTank(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY));
+                    canvas.DrawLine(MathUtils.vecToPt(body[i]), MathUtils.vecToPt(body[(i+1)%(body.Length)]), paint);
                 }
-                else
+                paint.Color = SKColors.White;
+                for (int i = 0; i < wheelPos.GetLength(0); i++)
                 {
-                    chassis.inputWheelPowers(Utils.wheelPowsFromJoyStickX(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY, controller.GetState().Gamepad.LeftThumbX));
+                    for(int j = 0; j < wheelPos.GetLength(1); j++)
+                    {
+                        canvas.DrawLine(MathUtils.vecToPt(wheelPos[i,j]), MathUtils.vecToPt(wheelPos[i,(j+1) % (wheelPos.GetLength(1))]), paint);
+                    }
                 }
+                paint.Color = SKColors.Red;
+                canvas.DrawLine(Utils.MathUtils.vecToPt(headerLine[0]), Utils.MathUtils.vecToPt(headerLine[1]), paint);
                 sendFrame();
-                Thread.Sleep(8);
+                Thread.Sleep(20);
 
             }
 
@@ -185,15 +174,29 @@ namespace DriveSim
             Stopwatch timer = new Stopwatch();
             timer.Start();
             double prevTime = 0;
+            bool beyblading = false;
+            bool prevA = controller.GetState().Gamepad.Buttons == GamepadButtonFlags.A;
             while (canvasState == state.driving && connected)
             {
-                if (method.tank == drivingMethod)
+                if (drivingMethod == method.tank)
                 {
-                    chassis.inputWheelPowers(Utils.wheelPowsFromJoyStickTank(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY));
+                    chassis.inputWheelPowers(ControlUtils.wheelPowsFromJoyStickTank(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY));
                 }
                 else
                 {
-                    chassis.inputWheelPowers(Utils.wheelPowsFromJoyStickX(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY, controller.GetState().Gamepad.LeftThumbX));
+                    if (prevA == (controller.GetState().Gamepad.Buttons == GamepadButtonFlags.A))
+                    {
+                        beyblading = !beyblading;
+                    }
+                    prevA = controller.GetState().Gamepad.Buttons == GamepadButtonFlags.A;
+                    if (beyblading)
+                    {
+                        chassis.inputWheelPowers(ControlUtils.wheelPowsFromJoyStickX(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY, controller.GetState().Gamepad.LeftThumbX));
+                    }
+                    else
+                    {
+                        chassis.inputWheelPowers(ControlUtils.wheelPowsFromJoyStickX(controller.GetState().Gamepad.LeftThumbY, controller.GetState().Gamepad.RightThumbY, controller.GetState().Gamepad.LeftThumbX));
+                    }
                 }
                 chassis.step(timer.ElapsedMilliseconds / 1000.0 - prevTime);
                 prevTime = timer.ElapsedMilliseconds/1000.0;

@@ -4,6 +4,8 @@ using System.Windows.Input;
 using DriveSimFR;
 using System.Windows.Forms;
 using System.Collections;
+using DriveSim.Charges;
+using DriveSim.Utils;
 
 public class StaticChargeCanvas
 {
@@ -121,7 +123,7 @@ public class StaticChargeCanvas
                                     {
                                         for (LinkedListNode<Vector> node = lines.First; node.Next != null; node = node.Next)
                                         {
-                                            canvas.DrawLine(Utils.vecToPt(node.Value), Utils.vecToPt(node.Next.Value), paint);
+                                            canvas.DrawLine(MathUtils.vecToPt(node.Value), MathUtils.vecToPt(node.Next.Value), paint);
                                         }
                                     }
                                 }
@@ -141,7 +143,7 @@ public class StaticChargeCanvas
                                 {
                                     Vector p1 = new Vector(electricFields[r, c, 0]);
                                     Vector p2 = p1 + electricFields[r, c, 1];
-                                    canvas.DrawLine(Utils.vecToPt(p1), Utils.vecToPt(p2), paint);
+                                    canvas.DrawLine(MathUtils.vecToPt(p1), MathUtils.vecToPt(p2), paint);
                                 }
                             }
                             break;
@@ -149,7 +151,7 @@ public class StaticChargeCanvas
                     paint.Color = SKColors.Red;
                     foreach (PointCharge charge in field.getCharges())
                     {
-                        canvas.DrawCircle(Utils.vecToPt(charge.location), 10, paint);
+                        canvas.DrawCircle(MathUtils.vecToPt(charge.location), 10, paint);
 
                     }
                     break;

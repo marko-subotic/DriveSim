@@ -1,4 +1,5 @@
-﻿using DriveSimFR;
+﻿using DriveSim.Utils;
+using DriveSimFR;
 
 namespace tests
 {
@@ -12,7 +13,6 @@ namespace tests
         int max_speed = 10;
         double k_lat = .2;
         double mass = 1;
-        double maxError = .0001;
         public Vector[] getWheelPos(Vector[,] wheelPos)
         {
             Vector[] rtrn = new Vector[num_wheels];
@@ -22,10 +22,7 @@ namespace tests
             }
             return rtrn;
         }
-        public void AssertDouble(double value1, double value2)
-        {
-            Assert.IsTrue(Math.Abs(value2- value1) <= maxError, value1.ToString() + ")(" + value2.ToString());
-        }
+        
         [TestMethod]
         public void TestTankStep_NoStartingVeloStraight()
         {
@@ -47,14 +44,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos(), expectedPos);
-            Assert.IsTrue(Math.Abs(tester.getHeading() -expectedHead) < maxError|| Math.Abs(tester.getHeading() - (expectedHead+Math.PI*2)) < maxError, tester.getHeading().ToString() + " )( " + expectedHead.ToString());
+            Assert.IsTrue(Math.Abs(tester.getHeading() -expectedHead) < TestHelpers.maxError|| Math.Abs(tester.getHeading() - (expectedHead+Math.PI*2)) < TestHelpers.maxError, tester.getHeading().ToString() + " )( " + expectedHead.ToString());
             for (int i = 0; i < num_wheels; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }
@@ -72,7 +69,7 @@ namespace tests
             Vector expectedLinVelo = new Vector();
             double expectedAngVelo = accel*Math.Pow(step_size,1);
             Vector expectedPos = new Vector();
-            double expectedHead = Utils.mod2PI((.5 * accel*Math.Pow(step_size,2)));
+            double expectedHead = MathUtils.mod2PI((.5 * accel*Math.Pow(step_size,2)));
             double wlSpd = expectedAngVelo * -rT*radius;
             double[,] expectedWheelVelos = new double[,] { { wlSpd, wlSpd }, { -wlSpd, wlSpd }, { -wlSpd, -wlSpd }, { wlSpd, -wlSpd } };
             //when
@@ -81,14 +78,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos() , expectedPos);
-            AssertDouble(tester.getHeading(), expectedHead);
+            TestHelpers.AssertDouble(tester.getHeading(), expectedHead);
             for (int i = 0; i < num_wheels; i++)
             {
                 for(int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }
@@ -104,10 +101,10 @@ namespace tests
             tester.setHeading(Math.PI * 7 / 4);
             double[] wheelPows = new double[] { 1, 1, 1, 1 };
             double expectedHead = Math.PI * 7 / 4;
-            Vector expectedLinVelo = (max_speed) * Utils.unitVectorFromTheta(expectedHead);
+            Vector expectedLinVelo = (max_speed) * MathUtils.unitVectorFromTheta(expectedHead);
             double expectedAngVelo = 0;
             tester.setVelos(expectedLinVelo, expectedAngVelo);
-            Vector expectedPos = (max_speed) * Utils.unitVectorFromTheta(expectedHead);
+            Vector expectedPos = (max_speed) * MathUtils.unitVectorFromTheta(expectedHead);
             double wlSpd = max_speed;
             double[,] expectedWheelVelos = new double[,] { { wlSpd, 0 }, { wlSpd, 0 }, { wlSpd, 0 }, { wlSpd, 0 } };
 
@@ -117,14 +114,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos(), expectedPos);
-            AssertDouble(tester.getHeading(), expectedHead);
+            TestHelpers.AssertDouble(tester.getHeading(), expectedHead);
             for (int i = 0; i < num_wheels; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }
@@ -140,10 +137,10 @@ namespace tests
             double[] wheelPows = new double[] { 1, -1, -1, 1 };
             double expectedHead = Math.PI * 7 / 4;
             double spd = Math.Sqrt(Math.Pow(max_speed, 2)/(1+ k_lat* Math.Pow(max_speed, 2)));
-            Vector expectedLinVelo = (1 / rT * spd) * Utils.unitVectorFromTheta(expectedHead);
+            Vector expectedLinVelo = (1 / rT * spd) * MathUtils.unitVectorFromTheta(expectedHead);
             double expectedAngVelo = 0;
             tester.setVelos(expectedLinVelo, expectedAngVelo);
-            Vector expectedPos = (expectedLinVelo.dist())*Utils.unitVectorFromTheta(expectedHead);
+            Vector expectedPos = (expectedLinVelo.dist())*MathUtils.unitVectorFromTheta(expectedHead);
             double wlSpd = spd;
             double[,] expectedWheelVelos = new double[,] { { wlSpd, -wlSpd }, { -wlSpd, -wlSpd }, { -wlSpd, wlSpd }, { wlSpd, wlSpd } };
 
@@ -153,14 +150,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos(), expectedPos);
-            AssertDouble(tester.getHeading(), expectedHead);
+            TestHelpers.AssertDouble(tester.getHeading(), expectedHead);
             for (int i = 0; i < num_wheels; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }
@@ -177,9 +174,9 @@ namespace tests
             double[] wheelPows = new double[] { 1, 1, 1, 1 };
             double expectedHead = 0;
             double expectedAngVelo = 0;
-            tester.setVelos(Utils.unitVectorFromTheta(expectedHead)*max_speed/2, expectedAngVelo);
-            Vector expectedLinVelo = (max_speed / 2 + accel * step_size) * Utils.unitVectorFromTheta(expectedHead);
-            Vector expectedPos = (max_speed/2*step_size+.5*accel*Math.Pow(step_size,2)) * Utils.unitVectorFromTheta(expectedHead);
+            tester.setVelos(MathUtils.unitVectorFromTheta(expectedHead)*max_speed/2, expectedAngVelo);
+            Vector expectedLinVelo = (max_speed / 2 + accel * step_size) * MathUtils.unitVectorFromTheta(expectedHead);
+            Vector expectedPos = (max_speed/2*step_size+.5*accel*Math.Pow(step_size,2)) * MathUtils.unitVectorFromTheta(expectedHead);
             double wlSpd = expectedLinVelo.y;
             double[,] expectedWheelVelos = new double[,] { { wlSpd, 0 }, { wlSpd, 0 }, { wlSpd, 0 }, { wlSpd, 0 } };
 
@@ -189,14 +186,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos(), expectedPos);
-            AssertDouble(tester.getHeading(), expectedHead);
+            TestHelpers.AssertDouble(tester.getHeading(), expectedHead);
             for (int i = 0; i < num_wheels; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }
@@ -211,7 +208,7 @@ namespace tests
             tester.setHeading(0);
             double[] wheelPows = new double[] { 1, -1, -1, 1 };
             double spd = Math.Sqrt(Math.Pow(max_speed, 2) / (1 + k_lat * Math.Pow(max_speed, 2)));
-            double expectedHead = Utils.mod2PI(-spd /radius/rT*step_size); //divide by sqrt2/2 to ensure that wheelspeed is spd
+            double expectedHead = MathUtils.mod2PI(-spd /radius/rT*step_size); //divide by sqrt2/2 to ensure that wheelspeed is spd
             double expectedAngVelo = -spd /rT/radius;
             tester.setVelos(new Vector(), expectedAngVelo);
             Vector expectedLinVelo = new Vector();
@@ -224,14 +221,14 @@ namespace tests
 
             //then
             Assert.AreEqual(tester.getLinVelo(), expectedLinVelo);
-            AssertDouble(tester.getAngVelo(), expectedAngVelo);
+            TestHelpers.AssertDouble(tester.getAngVelo(), expectedAngVelo);
             Assert.AreEqual(tester.getPos(), expectedPos);
-            AssertDouble(tester.getHeading(), expectedHead);
+            TestHelpers.AssertDouble(tester.getHeading(), expectedHead);
             for (int i = 0; i < num_wheels; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
+                    TestHelpers.AssertDouble(tester.getWheelVelos()[i, j], expectedWheelVelos[i, j]);
                 }
             }
         }

@@ -1,4 +1,5 @@
-﻿using DriveSimFR;
+﻿using DriveSim.Utils;
+using DriveSimFR;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,7 +19,7 @@ namespace tests
         public void angleToVectorQ1()
         {
             Vector target = new Vector(0.5, Math.Sqrt(3) / 2);
-            double dif = Math.Abs(Utils.angleToVector(target) - (11 * Math.PI / 6));
+            double dif = Math.Abs(MathUtils.angleToVector(target) - (11 * Math.PI / 6));
 
 
             Assert.IsTrue(dif < minDif, dif.ToString());
@@ -28,7 +29,7 @@ namespace tests
         {
             bool result = false;
             Vector target = new Vector(-0.5, Math.Sqrt(3) / 2);
-            double dif = Math.Abs(Utils.angleToVector(target) - Math.PI / 6);
+            double dif = Math.Abs(MathUtils.angleToVector(target) - Math.PI / 6);
 
             Assert.IsTrue(dif < minDif, dif.ToString());
         }
@@ -38,7 +39,7 @@ namespace tests
         {
             bool result = false;
             Vector target = new Vector(-0.5, Math.Sqrt(3) / -2);
-            double dif = Math.Abs(Utils.angleToVector(target) - (5 * Math.PI / 6));
+            double dif = Math.Abs(MathUtils.angleToVector(target) - (5 * Math.PI / 6));
             Assert.IsTrue(dif < minDif, dif.ToString());
         }
 
@@ -48,7 +49,7 @@ namespace tests
         {
             bool result = false;
             Vector target = new Vector(0.5, Math.Sqrt(3) / -2);
-            double dif = Math.Abs(Utils.angleToVector(target) - (7 * Math.PI / 6));
+            double dif = Math.Abs(MathUtils.angleToVector(target) - (7 * Math.PI / 6));
 
             Assert.IsTrue(dif < minDif, dif.ToString());
         }
@@ -57,7 +58,7 @@ namespace tests
         {
             //given
             Vector target = new Vector(0.5, Math.Sqrt(3) / 2);
-            Vector test = Utils.unitVectorFromTheta(11 * Math.PI / 6);
+            Vector test = MathUtils.unitVectorFromTheta(11 * Math.PI / 6);
 
             //then
             Assert.IsTrue(test==target, test + " | " + target);
@@ -67,7 +68,7 @@ namespace tests
         {
             //given
             Vector target = new Vector(-0.5, Math.Sqrt(3) / 2);
-            Vector test = Utils.unitVectorFromTheta(Math.PI / 6);
+            Vector test = MathUtils.unitVectorFromTheta(Math.PI / 6);
 
             //then
             Assert.IsTrue(test == target, test + " | " + target);
@@ -78,7 +79,7 @@ namespace tests
         {
             //given
             Vector target = new Vector(-0.5, Math.Sqrt(3) / -2);
-            Vector test = Utils.unitVectorFromTheta(5*Math.PI / 6);
+            Vector test = MathUtils.unitVectorFromTheta(5*Math.PI / 6);
 
             //then
             Assert.IsTrue(test == target, test + " | " + target);
@@ -91,7 +92,7 @@ namespace tests
         {
             //given
             Vector target = new Vector(0.5, Math.Sqrt(3) / -2);
-            Vector test = Utils.unitVectorFromTheta(7*Math.PI / 6);
+            Vector test = MathUtils.unitVectorFromTheta(7*Math.PI / 6);
 
             //then
             Assert.IsTrue(test == target, test + " | " + target);

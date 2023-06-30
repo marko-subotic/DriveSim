@@ -1,3 +1,4 @@
+using DriveSim.Utils;
 using DriveSimFR;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -65,8 +66,8 @@ public abstract class Chassis
             for (int i = 0; i < NUM_WHEELS; i++)
             {
                 this.wheelPositions[i, 0] = wheelPositions[i];
-                this.wheelPositions[i, 1] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
-                this.wheelPositions[i, 2] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
+                this.wheelPositions[i, 1] = wheelPositions[i] + MathUtils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
+                this.wheelPositions[i, 2] = wheelPositions[i] + MathUtils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
             }
         }
         
@@ -90,12 +91,12 @@ public abstract class Chassis
         for (int i = 0; i < NUM_WHEELS; i++)
         {
             this.wheelPositions[i, 0] = wheelPositions[i];
-            this.wheelPositions[i, 1] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
-            this.wheelPositions[i, 2] = wheelPositions[i] + Utils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
+            this.wheelPositions[i, 1] = wheelPositions[i] + MathUtils.unitVectorFromTheta(wheelDirections[i]) * wheelLength / 2;
+            this.wheelPositions[i, 2] = wheelPositions[i] + MathUtils.unitVectorFromTheta(wheelDirections[i]) * -wheelLength / 2;
         }
     }
 
-    /*
+    /**
      *This method takes input and sets the internal wheelpowers to input with some scaling.
      *
      *@throws Exception if any power given is over magnitude of 1
@@ -143,7 +144,7 @@ public abstract class Chassis
         {
             throw new Exception("negative time");
         }
-        Vector accel = Utils.rotateVector(header,getNetAccel());
+        Vector accel = MathUtils.rotateVector(header,getNetAccel());
         double alpha = getNetAlpha();
         using (mut)
         {
@@ -153,7 +154,7 @@ public abstract class Chassis
             position.y += linVelocity.y * time + .5 * accel.y * time * time;
             linVelocity.x += accel.x * time;
             linVelocity.y += accel.y * time;
-            header = Utils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
+            header = MathUtils.mod2PI(header + angVelocity * time + .5 * alpha * time * time);
             angVelocity += alpha * time;
             calcWheelVelos();
             mut.ReleaseMutex();
@@ -190,7 +191,7 @@ public abstract class Chassis
         {
             if(wheelPositions[i, 0].dist() != 0)
             {
-                double angTo = Utils.mod2PI(wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]));
+                double angTo = MathUtils.mod2PI(wheelDirections[i] - MathUtils.angleToVector(wheelPositions[i, 0]));
                 deltaO += (wheelPowers[i] - Math.Pow(wheelVelos[i, 0], 2) * (wheelVelos[i,0]>0 ? 1:-1)/ Math.Pow(MAX_SPEED, 2)) * Math.Sin(angTo) / wheelPositions[i, 0].dist() * K_ROT / MASS;
                 deltaO += (-Math.Pow(wheelVelos[i, 1], 2) * (wheelVelos[i, 1] > 0 ? 1 : -1) * K_FRIC_LAT) * Math.Sin(angTo-Math.PI/2) / wheelPositions[i, 0].dist() * K_ROT / MASS;
             }
@@ -222,7 +223,7 @@ public abstract class Chassis
      * **/
     private Vector getVeloVector(double magnitude, double heading)
     {
-        return Utils.unitVectorFromTheta(heading)*magnitude;
+        return MathUtils.unitVectorFromTheta(heading)*magnitude;
     }
 
     /*
@@ -233,12 +234,12 @@ public abstract class Chassis
     {
         for(int i = 0; i<wheelVelos.GetLength(0); i++)
         {
-            double angTo = wheelDirections[i] - Utils.angleToVector(wheelPositions[i, 0]);
+            double angTo = wheelDirections[i] - MathUtils.angleToVector(wheelPositions[i, 0]);
             wheelVelos[i,0] = Math.Sin(angTo) * angVelocity * wheelPositions[i, 0].dist();
             wheelVelos[i, 1] = Math.Cos(angTo) * -angVelocity * wheelPositions[i, 0].dist(); //ccw is positive angle velocity, to the right of the wheel should be positive direction of omni-wheel spin
             if (linVelocity.dist() > 0)
             {
-                double linTo = Utils.mod2PI(wheelDirections[i]+header) - Utils.angleToVector(linVelocity); //Adds heading to wheelDirection to account for fact that linVelocity is in global coordinate system
+                double linTo = MathUtils.mod2PI(wheelDirections[i]+header) - MathUtils.angleToVector(linVelocity); //Adds heading to wheelDirection to account for fact that linVelocity is in global coordinate system
                 wheelVelos[i,0] += Math.Cos(linTo) * linVelocity.dist();
                 wheelVelos[i,1] += Math.Sin(linTo) * linVelocity.dist();
 

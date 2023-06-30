@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DriveSimFR;
 using SkiaSharp;
 
-namespace DriveSimFR
+namespace DriveSim.Utils
 {
-    public class Utils
+    public class MathUtils
     {
-        private static readonly double JOYSTICK_MAX = 65540/2;
-        private static readonly double JOYSTICK_DEADZONE = .4;
 
+        public static double minDiff = .00001;
         /*
-     * Similar to atan2 function, but returns an angle according to theta = 0
-     * meaning the Vector is directly above the origin and positive direction of theta being ccw.
-     * **/
+         * Similar to atan2 function, but returns an angle according to theta = 0
+         * meaning the Vector is directly above the origin and positive direction of theta being ccw.
+         * *
+         */
         public static double angleToVector(Vector target, Vector origin = new Vector())
         {
             target -= origin;
@@ -88,58 +89,72 @@ namespace DriveSimFR
             return mod;
         }
 
-        public static Vector rotateVector(double theta, Vector pointRotating , Vector pointOfRotation  = new Vector())
+        public static Vector rotateVector(double theta, Vector pointRotating, Vector pointOfRotation = new Vector())
         {
             double cosT = Math.Cos(theta);
             double sinT = Math.Sin(theta);
 
             double xTemp = pointRotating.x - pointOfRotation.x;
             double yTemp = pointRotating.y - pointOfRotation.y;
-            pointOfRotation.x += (xTemp* cosT) - (yTemp* sinT);
-            pointOfRotation.y += (xTemp* sinT) + (yTemp* cosT);
+            pointOfRotation.x += xTemp * cosT - yTemp * sinT;
+            pointOfRotation.y += xTemp * sinT + yTemp * cosT;
 
             return pointOfRotation;
-         }
-
-        public static double[] wheelPowsFromJoyStickTank(int r, int l)
-        {
-            double[] rtrn = new double[]{ l/ JOYSTICK_MAX, r/ JOYSTICK_MAX, r/ JOYSTICK_MAX, l/ JOYSTICK_MAX };
-            for(int i = 0; i< rtrn.Length; i++)
-            {
-                if (Math.Abs(rtrn[i]) < JOYSTICK_DEADZONE)
-                {
-                    rtrn[i] = 0;
-                }
-            }
-            return rtrn;
         }
 
-        public static double[] wheelPowsFromJoyStickX(int r, int l, int m)
+        public static void scaleRow(double[,] array, int row, double scalar)
         {
-            m *= -1;
-            double[] rtrn = new double[] { (l+m)/ JOYSTICK_MAX, (m-r)/ JOYSTICK_MAX, (-m-r)/ JOYSTICK_MAX, (l-m)/ JOYSTICK_MAX };
-            for (int i = 0; i < rtrn.Length; i++)
-            {
-                if (Math.Abs(rtrn[i]) < JOYSTICK_DEADZONE)
-                {
-                    rtrn[i] = 0;
-                }
-                if (Math.Abs(rtrn[i]) > 1)
-                {
-                    if (rtrn[i] > 1)
-                    {
-                        rtrn[i] = 1;
-                    }
-                    else
-                    {
-                        rtrn[i] = -1;
-                    }
-                }
+            for (int i = 0; i < array.GetLength(1); i++){
+                array[row, i] *= scalar;
             }
-            return rtrn;
+        }
+
+        /*
+         * Subtracts row2 from row1
+         */
+        public static void subtractRows(double[,]array, int row1, int row2, double scalar=1)
+        {
+            for(int i = 0; i < array.GetLength(1); i++)
+            {
+                array[row1,i] -= array[row2,i]*scalar;
+            }
+        }
+
+        public static void swapRows(double[,] matrix, int row1, int row2)
+        {
+            for(int i = 0; i < matrix.GetLength(1); i++)
+            {
+                double temp = matrix[row1,i];
+                matrix[row1,i] = matrix[row2,i];
+                matrix[row2,i] = temp;
+            }
         }
         /*
-         * returns cross product of two vectors
+         * Solves an augmented matrix.
          */
+        public static void gaussianElim(double[,] array)
+        {
+            for (int i = 0; i < array.GetLength(0); i++){
+                if (Math.Abs(array[i, i]) > minDiff)
+                {
+                    scaleRow(array, i, 1/array[i,i]);
+                    for (int j = i+1; j < array.GetLength(0); j++)
+                    {    
+                        subtractRows(array, j, i, array[j, i]);
+                    }
+                }
+            }
+
+            for(int i = array.GetLength(0)-1; i > 0; i--)
+            {
+                if (Math.Abs(array[i, i]) > minDiff)
+                {
+                    for(int j = i-1; j >=0; j--)
+                    {
+                        subtractRows(array, j, i, array[j,i]);
+                    }
+                }
+            }
+        }
     }
 }

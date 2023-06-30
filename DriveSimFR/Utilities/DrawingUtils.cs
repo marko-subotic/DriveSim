@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DriveSimFR
+namespace DriveSim.Utils
 {
     public class DrawingUtils
     {
@@ -20,11 +20,11 @@ namespace DriveSimFR
         {
             return new Rect(x1 - x2 / 2, y1 - y2 / 2, x2, y2);
         }
-        
+
         public static void drawButton(SKCanvas canvas, SKPaint rectPaint, SKPaint textPaint, MyButton button)
         {
-            canvas.DrawRect(Utils.rectToSK(button.rectangle), rectPaint);
-            canvas.DrawText(button.text, Utils.vecToPt(button.rectangle.center), textPaint);
+            canvas.DrawRect(MathUtils.rectToSK(button.rectangle), rectPaint);
+            canvas.DrawText(button.text, MathUtils.vecToPt(button.rectangle.center), textPaint);
         }
     }
 }

@@ -5,8 +5,10 @@ using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
+using DriveSimFR;
+using DriveSim.Utils;
 
-namespace DriveSimFR
+namespace DriveSim.Charges
 {
 
     /*
@@ -35,13 +37,13 @@ namespace DriveSimFR
             this.resolution_height = resolution_height;
             this.resolution_circle = resolution_circle;
             fieldVectors = new Vector[resolution_width, resolution_height, 2];
-            fieldLines = new ArrayList();   
+            fieldLines = new ArrayList();
             charges = new ArrayList();
             for (int r = 0; r < fieldVectors.GetLength(0); r++)
             {
                 for (int c = 0; c < fieldVectors.GetLength(1); c++)
                 {
-                    Vector location = new Vector((r + 1) * width / ((double)resolution_width), (c + 1) * height / ((double)resolution_height));
+                    Vector location = new Vector((r + 1) * width / (double)resolution_width, (c + 1) * height / (double)resolution_height);
                     fieldVectors[r, c, 0] = location;
                 }
             }
@@ -56,9 +58,9 @@ namespace DriveSimFR
             {
                 for (int c = 0; c < resolution_height; c++)
                 {
-                    Vector location = fieldVectors[r,c,0];
+                    Vector location = fieldVectors[r, c, 0];
                     fieldVectors[r, c, 1] = netField(location);
-                    fieldVectors[r, c, 1] *= vectorScale/fieldVectors[r, c, 1].dist();
+                    fieldVectors[r, c, 1] *= vectorScale / fieldVectors[r, c, 1].dist();
                 }
             }
         }
@@ -68,22 +70,22 @@ namespace DriveSimFR
         public void addChargeEulers(PointCharge inCharge)
         {
             addCharge(inCharge);
-            for (int j = 0; j<charges.Count; j++)
+            for (int j = 0; j < charges.Count; j++)
             {
-                   PointCharge charge = (PointCharge)charges[j];
+                PointCharge charge = (PointCharge)charges[j];
                 fieldLines[j] = new ArrayList();
                 ArrayList chargeList = (ArrayList)fieldLines[j];
-                for (int i = 0; i < resolution_circle; i ++)
+                for (int i = 0; i < resolution_circle; i++)
                 {
-                    double theta = (double)i * 2* Math.PI / resolution_circle;
+                    double theta = (double)i * 2 * Math.PI / resolution_circle;
                     chargeList.Add(new LinkedList<Vector>());
-                    Vector location = charge.location + Utils.unitVectorFromTheta(theta) * startDist;
+                    Vector location = charge.location + MathUtils.unitVectorFromTheta(theta) * startDist;
                     LinkedList<Vector> currentTrail = (LinkedList<Vector>)chargeList[i];
-                    while (inBounds(location,charge))
+                    while (inBounds(location, charge))
                     {
                         currentTrail.AddLast(location);
                         Vector net_field = netField(location);
-                        location += net_field * step_size / net_field.dist() * (charge.charge>0 ? 1 : -1);
+                        location += net_field * step_size / net_field.dist() * (charge.charge > 0 ? 1 : -1);
                     }
                 }
             }
@@ -98,7 +100,7 @@ namespace DriveSimFR
             charges.Add(inCharge);
             fieldLines.Add(new ArrayList());
         }
-        
+
         /*
          * Will clear away all charges and lines holding anything. essentially a reset.
          */
@@ -106,10 +108,11 @@ namespace DriveSimFR
         {
             fieldLines.Clear();
             charges.Clear();
-            for(int i = 0; i < fieldVectors.GetLength(0); i++){
+            for (int i = 0; i < fieldVectors.GetLength(0); i++)
+            {
                 for (int j = 0; j < fieldVectors.GetLength(1); j++)
                 {
-                    fieldVectors[i,j,0] = new Vector();
+                    fieldVectors[i, j, 0] = new Vector();
                     fieldVectors[i, j, 1] = new Vector();
                 }
             }
@@ -122,7 +125,7 @@ namespace DriveSimFR
             Vector net = new Vector();
             foreach (PointCharge charge in charges)
             {
-                net += Utils.unitVectorFromTheta(Utils.angleToVector(point, charge.location)) * charge.charge / charge.location.dist(point);
+                net += MathUtils.unitVectorFromTheta(MathUtils.angleToVector(point, charge.location)) * charge.charge / charge.location.dist(point);
             }
             return net;
         }
@@ -133,9 +136,9 @@ namespace DriveSimFR
          */
         private bool inBounds(Vector vector, PointCharge inCharge)
         {
-            if(vector.x<0||vector.x>width) return false;
-            if(vector.y<0||vector.y>height) return false;
-            foreach(PointCharge charge in charges)
+            if (vector.x < 0 || vector.x > width) return false;
+            if (vector.y < 0 || vector.y > height) return false;
+            foreach (PointCharge charge in charges)
             {
                 if (charge.location != inCharge.location)
                 {
@@ -152,11 +155,11 @@ namespace DriveSimFR
         public Vector[,,] getElectricFields()
         {
             Vector[,,] deepCopy = new Vector[fieldVectors.GetLength(0), fieldVectors.GetLength(1), fieldVectors.GetLength(2)];
-            for(int r = 0; r < deepCopy.GetLength(0); r++)
+            for (int r = 0; r < deepCopy.GetLength(0); r++)
             {
-                for(int c = 0; c< deepCopy.GetLength(1); c++)
+                for (int c = 0; c < deepCopy.GetLength(1); c++)
                 {
-                    for(int i = 0; i < deepCopy.GetLength(2); i++)
+                    for (int i = 0; i < deepCopy.GetLength(2); i++)
                     {
                         deepCopy[r, c, i] = fieldVectors[r, c, i];
                     }
